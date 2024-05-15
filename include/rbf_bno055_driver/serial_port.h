@@ -2,6 +2,7 @@
 #define SERIAL_PORT_H
 
 #include <stdexcept>
+#include <rbf_bno055_driver/serial_port.h>
 
 class SerialPortException : public std::runtime_error {
 public:

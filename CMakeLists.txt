@@ -16,15 +16,13 @@ find_package(diagnostic_msgs REQUIRED)
 include_directories(include)
 
 add_library(rbf_bno055_driver_component SHARED
-    src/rbf_bno055_driver.cpp
-    src/serial_port.cpp
+  src/rbf_bno055_driver.cpp
+  src/serial_port.cpp
 )
 
 ament_target_dependencies(rbf_bno055_driver_component
   rclcpp
   rclcpp_components
-  sensor_msgs
-  diagnostic_msgs
 )
 
 rclcpp_components_register_node(

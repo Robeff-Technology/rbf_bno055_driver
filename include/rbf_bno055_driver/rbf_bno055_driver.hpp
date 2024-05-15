@@ -5,7 +5,6 @@
 #include <string>
 #include <rbf_bno055_driver/serial_port.h>
 #include <rbf_bno055_driver/bno055_struct.h>
-#include <sensor_msgs/msg/imu.hpp>
 #include <rbf_bno055_driver/bno055_reg.h>
 #include <chrono>
 
@@ -40,9 +39,10 @@ namespace rbf_bno055_driver
 
         void timerCallback();
         void load_parameters();
+        void load_startup_params();
 
         /*PUBLISHERS*/
-        void publishIMUData(const bno055_struct::BNO055Data& imu_data);
+        // void publishIMUData(const bno055_struct::BNO055Data& imu_data);
 
     };
 } // namespace rbf_bno055_driver
