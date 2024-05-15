@@ -6,7 +6,8 @@
 #include <rbf_bno055_driver/serial_port.h>
 #include <rbf_bno055_driver/bno055_struct.h>
 #include <sensor_msgs/msg/imu.hpp>
-
+#include <rbf_bno055_driver/bno055_reg.h>
+#include <chrono>
 
 
 namespace rbf_bno055_driver
@@ -34,8 +35,10 @@ namespace rbf_bno055_driver
          */
         SerialPort serial_port_;
 
-        
+        rclcpp::TimerBase::SharedPtr timer_;
 
+
+        void timerCallback();
         void load_parameters();
 
         /*PUBLISHERS*/

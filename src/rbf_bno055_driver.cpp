@@ -1,35 +1,41 @@
 #include "rbf_bno055_driver/rbf_bno055_driver.hpp"
 #include "rbf_bno055_driver/bno055_struct.h"
+#include <rclcpp/clock.hpp>
 
 namespace rbf_bno055_driver
 {
-    BNO055Driver::BNO055Driver(const rclcpp::NodeOptions& options) : Node("rbf_ntrip_driver", options) 
+    BNO055Driver::BNO055Driver(const rclcpp::NodeOptions& options) : Node("rbf_bno055_driver", options) 
     {
         load_parameters();
 
         try{
             serial_port_.set_port_name(config_.serial_port.port.c_str());
             serial_port_.open();
-            serial_port_.configure(config_.serial_port.baudrate, 8, 'N', 1);
+            serial_port_.configure(115200, 8, 'N', 1);
         }
         catch (const SerialPortException& e){
             RCLCPP_ERROR(get_logger(), e.what());
             rclcpp::shutdown();
         }
 
-        // Call the function to read sensor data
-        readSensorData();
+        // Create a timer with a 10 ms period (100 Hz)
+        timer_ = this->create_wall_timer(
+            std::chrono::milliseconds(10),
+            std::bind(&BNO055Driver::timerCallback, this));
+
     }
 
-    void BNO055Driver::readSensorData()
+
+        void BNO055Driver::timerCallback()
     {
         // Read data from the sensor
-        bno055_struct::BNO055Data bno055_data_; // Corrected struct name here
-        serial_port_.read(reinterpret_cast<char*>(&bno055_data_), sizeof(bno055_data_)); // Corrected variable name here
+        bno055_struct::BNO055Data imu_data;
+        serial_port_.read(reinterpret_cast<char*>(&imu_data), sizeof(imu_data));
 
         // Publish IMU data
-        publishIMUData(bno055_data_); // Corrected variable name here
+        publishIMUData(imu_data);
     }
+
 
     void BNO055Driver::publishIMUData(const bno055_struct::BNO055Data& imu_data)
     {
@@ -53,9 +59,9 @@ namespace rbf_bno055_driver
         imu_msg.linear_acceleration.z = imu_data.z_accel_output;
 
         // Magnetometer data
-        imu_msg.magnetic_field.x = imu_data.x_magnetometer;
-        imu_msg.magnetic_field.y = imu_data.y_magnetometer;
-        imu_msg.magnetic_field.z = imu_data.z_magnetometer;
+        // imu_msg.magnetic_field.x = imu_data.x_magnetometer;
+        // imu_msg.magnetic_field.y = imu_data.y_magnetometer;
+        // imu_msg.magnetic_field.z = imu_data.z_magnetometer;
 
         // Publish IMU message
         // imu_publisher_->publish(imu_msg);
