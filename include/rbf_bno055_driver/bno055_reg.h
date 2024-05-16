@@ -9,6 +9,10 @@
 namespace rbf_bno055_driver
 {
 
+enum BNO055ChipID : uint8_t
+{
+  BNO_CHIP_ID = 0xA0,
+};
 enum BNO055RegisterCommand : uint8_t
 {
   WRITE = 0,
@@ -44,6 +48,14 @@ enum BNO055MessageType : uint8_t
   REGISTER_COMMAND = 0xAA,
   READ_RESPONSE = 0xBB,
   RESPONSE_STATUS = 0xEE,
+};
+
+enum BNO055ConfigRegister : uint8_t
+{
+  ACC_CONFIG = 0x0D,
+  MAG_CONFIG = 0x6D,
+  GYR_CONFIG = 0x38,
+  GYR_CONFIG_1 = 0x00,
 };
 
 enum BNO055Register : uint8_t

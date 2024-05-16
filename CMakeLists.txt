@@ -18,11 +18,13 @@ include_directories(include)
 add_library(rbf_bno055_driver_component SHARED
   src/rbf_bno055_driver.cpp
   src/serial_port.cpp
+  src/bno055.cpp
 )
 
 ament_target_dependencies(rbf_bno055_driver_component
   rclcpp
   rclcpp_components
+  sensor_msgs
 )
 
 rclcpp_components_register_node(

@@ -24,7 +24,7 @@ void SerialPort::open() {
         throw SerialPortException("port name not set.");
     }
 
-    fd_ = ::open(port_name_, O_RDWR | O_NOCTTY | O_NONBLOCK);
+    fd_ = ::open(port_name_, O_RDWR | O_NOCTTY );
     if (fd_ == -1) {
         throw SerialPortException("failed to open serial port.");
     }
@@ -114,7 +114,7 @@ void SerialPort::configure(unsigned int baud_rate, int data_bits, char parity, i
 
     // Set timeout
     tty.c_cc[VTIME] = 10; // Wait for up to 1s (10 deciseconds), returning as soon as any data is received.
-    tty.c_cc[VMIN] = 0;
+    tty.c_cc[VMIN] = 1;
 
     // Apply settings
     if (tcsetattr(fd_, TCSANOW, &tty) != 0) {
@@ -130,15 +130,9 @@ void SerialPort::write(const char* data, int length) {
 }
 
 void SerialPort::read(char* buffer, int buffer_size) {
-    int bytes_available;
-    if (ioctl(fd_, FIONREAD, &bytes_available) < 0) {
-        throw SerialPortException("error checking bytes available to read.");
-    }
-    else if(bytes_available > 0){
-        ssize_t bytes_read = ::read(fd_, buffer, buffer_size);
-        if (bytes_read < 0) {
-            throw SerialPortException("error reading from serial port.");
-        }
+    ssize_t bytes_read = ::read(fd_, buffer, buffer_size);
+    if (bytes_read < 0) {
+        throw SerialPortException("error reading from serial port.");
     }
 }
 
