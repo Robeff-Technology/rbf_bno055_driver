@@ -29,7 +29,7 @@ namespace rbf_bno055_driver
         pub_imu_ = this->create_publisher<sensor_msgs::msg::Imu>("imu", 10);
         // Create a timer with a 10 ms period (100 Hz)
         timer_ = this->create_wall_timer(
-            std::chrono::milliseconds(10),
+            std::chrono::milliseconds(100),
             std::bind(&BNO055Driver::timerCallback, this));
 
     }
@@ -39,10 +39,12 @@ namespace rbf_bno055_driver
         RawBNO055Data raw_;
         CalibrationBNO055Data calb_;
         try{
-            raw_= bno_->read_raw_data();
+            // raw_= bno_->read_raw_data();
             calb_ = bno_->read_calib_data();
         }
         catch (const BNO055::BNO055Exception& e){
+            RCLCPP_ERROR(get_logger(), "BNO055 read error = %s", e.what());
+            
         }
         // Publish IMU data
         pub_imu_->publish(create_imu_message(raw_));
