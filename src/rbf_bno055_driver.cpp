@@ -37,8 +37,10 @@ namespace rbf_bno055_driver
 
     void BNO055Driver::timerCallback(){
         RawBNO055Data raw_;
+        CalibrationBNO055Data calb_;
         try{
             raw_= bno_->read_raw_data();
+            calb_ = bno_->read_calib_data();
         }
         catch (const BNO055::BNO055Exception& e){
         }

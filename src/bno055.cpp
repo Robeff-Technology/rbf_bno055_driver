@@ -3,6 +3,7 @@
 #include <cstring>
 #include <iostream>
 
+
 // Path: rbf_bno055_driver/src/bno055.cpp
 // Compare this snippet from rbf_bno055_driver/include/rbf_bno055_driver/bno055.h:
 
@@ -76,7 +77,7 @@ namespace rbf_bno055_driver {
 
 
         // SET ACC OFFSET
-        size = create_write_command_buffer(BNO055Register::ACC_OFFSET_X_LSB, create_offset_array(acc_offset), 6, sending_buffer);
+        size = create_write_command_buffer(BNO055Register::ACCEL_OFFSET_X_LSB_ADDR, create_offset_array(acc_offset), 6, sending_buffer);
         serial_port_.write(reinterpret_cast<char*>(sending_buffer), size);
         serial_port_.read(reinterpret_cast<char*>(receiving_buffer), 2);
         if(check_write_status(receiving_buffer) == false){
@@ -84,7 +85,7 @@ namespace rbf_bno055_driver {
         }
 
         // SET MAG OFFSET
-        size = create_write_command_buffer(BNO055Register::MAG_OFFSET_X_LSB, create_offset_array(mag_offset), 6, sending_buffer);
+        size = create_write_command_buffer(BNO055Register::MAG_OFFSET_X_LSB_ADDR, create_offset_array(mag_offset), 6, sending_buffer);
         serial_port_.write(reinterpret_cast<char*>(sending_buffer), size);
         serial_port_.read(reinterpret_cast<char*>(receiving_buffer), 2);
         if(check_write_status(receiving_buffer) == false){
@@ -92,7 +93,7 @@ namespace rbf_bno055_driver {
         }
 
         // SET GYRO OFFSET
-        size = create_write_command_buffer(BNO055Register::GYR_OFFSET_X_LSB, create_offset_array(gyro_offset), 6, sending_buffer);
+        size = create_write_command_buffer(BNO055Register::GYRO_OFFSET_X_LSB_ADDR, create_offset_array(gyro_offset), 6, sending_buffer);
         serial_port_.write(reinterpret_cast<char*>(sending_buffer), size);
         serial_port_.read(reinterpret_cast<char*>(receiving_buffer), 2);
         if(check_write_status(receiving_buffer) == false){
@@ -100,7 +101,7 @@ namespace rbf_bno055_driver {
         }
 
         // SET ACC RADIUS
-        size = create_write_command_buffer(BNO055Register::ACC_RADIUS_LSB, create_radius_array(acc_radius), 2, sending_buffer);
+        size = create_write_command_buffer(BNO055Register::ACCEL_RADIUS_LSB_ADDR, create_radius_array(acc_radius), 2, sending_buffer);
         serial_port_.write(reinterpret_cast<char*>(sending_buffer), size);
         serial_port_.read(reinterpret_cast<char*>(receiving_buffer), 2);
         if(check_write_status(receiving_buffer) == false){
@@ -108,7 +109,7 @@ namespace rbf_bno055_driver {
         }
 
         // SET MAG RADIUS
-        size = create_write_command_buffer(BNO055Register::MAG_RADIUS_LSB, create_radius_array(mag_radius), 2, sending_buffer);
+        size = create_write_command_buffer(BNO055Register::MAG_RADIUS_LSB_ADDR, create_radius_array(mag_radius), 2, sending_buffer);
         serial_port_.write(reinterpret_cast<char*>(sending_buffer), size);
         serial_port_.read(reinterpret_cast<char*>(receiving_buffer), 2);
         if(check_write_status(receiving_buffer) == false){
@@ -211,6 +212,22 @@ namespace rbf_bno055_driver {
         }
         RawBNO055Data data;
         std::memcpy(&data, &receiving_buffer[2], sizeof(RawBNO055Data));
+        return data;
+    }
+    
+    CalibrationBNO055Data BNO055::read_calib_data() {
+        size_t size = 0;
+        size = create_read_command_buffer(BNO055Register::ACCEL_OFFSET_X_LSB_ADDR, sizeof(CalibrationBNO055Data), sending_buffer);
+        serial_port_.write(reinterpret_cast<char*>(sending_buffer), size);
+        serial_port_.read(reinterpret_cast<char*>(receiving_buffer), sizeof(CalibrationBNO055Data) + 2);
+        if (check_receive_command(receiving_buffer, sizeof(CalibrationBNO055Data)) == false) {
+            memset(receiving_buffer, 0, sizeof(CalibrationBNO055Data) + 2);
+            throw BNO055Exception("CALIB DATA response error");
+        }
+        CalibrationBNO055Data data;
+        std::memcpy(&data, &receiving_buffer[2], sizeof(CalibrationBNO055Data));
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Calibration data:");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "accel_offset_x: %d", data.accel_offset_x);
         return data;
     }
 

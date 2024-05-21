@@ -7,6 +7,7 @@
 #include <string>
 #include <exception>
 #include <vector>
+#include <rclcpp/rclcpp.hpp>
 
 namespace rbf_bno055_driver {
 class BNO055 {
@@ -32,6 +33,9 @@ public:
 
     void initialize(std::vector<int16_t>& acc_offset, std::vector<int16_t>& mag_offset, std::vector<int16_t>& gyro_offset, int16_t acc_radius, int16_t mag_radius);
     RawBNO055Data read_raw_data();
+    CalibrationBNO055Data read_calib_data();
+   
+    
 private:
     // Add private member variables as needed
     SerialPort serial_port_;

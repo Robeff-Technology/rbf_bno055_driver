@@ -31,6 +31,24 @@ namespace rbf_bno055_driver {
       int16_t gravity_z;
       int8_t temp;
     };
+    struct CalibrationBNO055Data
+    {
+    int16_t accel_offset_x; /**< x acceleration offset */
+    int16_t accel_offset_y; /**< y acceleration offset */
+    int16_t accel_offset_z; /**< z acceleration offset */
+
+    int16_t mag_offset_x; /**< x magnetometer offset */
+    int16_t mag_offset_y; /**< y magnetometer offset */
+    int16_t mag_offset_z; /**< z magnetometer offset */
+
+    int16_t gyro_offset_x; /**< x gyroscrope offset */
+    int16_t gyro_offset_y; /**< y gyroscrope offset */
+    int16_t gyro_offset_z; /**< z gyroscrope offset */
+
+    int16_t accel_radius; /**< acceleration radius */
+
+    int16_t mag_radius; /**< magnetometer radius */
+    };
   #pragma pack(pop)
 }
 
