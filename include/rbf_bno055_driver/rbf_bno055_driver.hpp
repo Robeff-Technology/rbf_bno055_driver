@@ -10,6 +10,10 @@
 #include <chrono>
 
 #include <sensor_msgs/msg/imu.hpp>
+#include <sensor_msgs/msg/magnetic_field.hpp>
+#include <geometry_msgs/msg/quaternion.hpp>
+#include <geometry_msgs/msg/vector3.hpp>
+#include <cmath>
 
 
 namespace rbf_bno055_driver
@@ -30,6 +34,7 @@ namespace rbf_bno055_driver
             std::vector<int16_t> gyro_offset;
             int16_t acc_radius;
             int16_t mag_radius;
+            
         };
         BNO055 bno055;
         SerialPort serial_port;
@@ -44,10 +49,20 @@ namespace rbf_bno055_driver
         void timerCallback();
         void load_parameters();
         void load_startup_params();
+        
 
         std::shared_ptr<BNO055> bno_;
+        rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr pub_imu_raw_;
         rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr pub_imu_;
-        sensor_msgs::msg::Imu create_imu_message(const RawBNO055Data& raw_data);
+        rclcpp::Publisher<sensor_msgs::msg::MagneticField>::SharedPtr pub_mag_;
+        rclcpp::Publisher<geometry_msgs::msg::Vector3>::SharedPtr pub_grav_;
+        sensor_msgs::msg::Imu create_raw_imu_message(const RawBNO055Data& raw_imu_data);
+        sensor_msgs::msg::Imu create_imu_message(const RawBNO055Data& imu_data);
+        sensor_msgs::msg::MagneticField create_mag_message(const RawBNO055Data& mag_data);
+        geometry_msgs::msg::Vector3 create_grav_message(const RawBNO055Data& grav_data);
+        
+
+
 
     };
 } // namespace rbf_bno055_driver

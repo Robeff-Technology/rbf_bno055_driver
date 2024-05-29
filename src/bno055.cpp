@@ -210,6 +210,7 @@ namespace rbf_bno055_driver {
             memset(receiving_buffer, 0, sizeof(RawBNO055Data) + 2);
             throw BNO055Exception("ACC DATA response error");
         }
+
         RawBNO055Data data;
         std::memcpy(&data, &receiving_buffer[2], sizeof(RawBNO055Data));
         return data;
