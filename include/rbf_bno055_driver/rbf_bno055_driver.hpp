@@ -29,12 +29,17 @@ namespace rbf_bno055_driver
             int baudrate;
         }; 
         struct BNO055{
+            
+            float acc_factor;
+            float mag_factor;
+            float gyro_factor;
+            float grav_factor;
             std::vector<int16_t> mag_offset;
             std::vector<int16_t> acc_offset;
             std::vector<int16_t> gyro_offset;
             int16_t acc_radius;
             int16_t mag_radius;
-            
+
         };
         BNO055 bno055;
         SerialPort serial_port;

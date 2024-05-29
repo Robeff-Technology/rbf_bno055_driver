@@ -227,8 +227,8 @@ namespace rbf_bno055_driver {
         }
         CalibrationBNO055Data data;
         std::memcpy(&data, &receiving_buffer[2], sizeof(CalibrationBNO055Data));
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Calibration data:");
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "accel_offset_x: %d", data.accel_offset_x);
+        // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Calibration data:");
+        // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "accel_offset_x: %d", data.accel_offset_x);
         return data;
     }
 

@@ -7,7 +7,18 @@
 namespace rbf_bno055_driver
 {
     BNO055Driver::BNO055Driver(const rclcpp::NodeOptions& options) : Node("rbf_bno055_driver", options) {
-        //load_parameters();
+        load_parameters();
+
+
+        RCLCPP_INFO(get_logger(), "Serial port name: %s", config_.serial_port.port.c_str());
+        RCLCPP_INFO(get_logger(), "Serial port baud rate: %d", config_.serial_port.baudrate);
+        RCLCPP_INFO(get_logger(), "BNO055 acc factor: %f", config_.bno055.acc_factor);
+        RCLCPP_INFO(get_logger(), "BNO055 mag factor: %f", config_.bno055.mag_factor);
+        RCLCPP_INFO(get_logger(), "BNO055 gyro factor: %f", config_.bno055.gyro_factor);
+        RCLCPP_INFO(get_logger(), "BNO055 grav factor: %f", config_.bno055.grav_factor);
+        RCLCPP_INFO(get_logger(), "BNO055 acc offset: [%d, %d, %d]", config_.bno055.acc_offset[0], config_.bno055.acc_offset[1], config_.bno055.acc_offset[2]);
+        RCLCPP_INFO(get_logger(), "BNO055 mag offset: [%d, %d, %d]", config_.bno055.mag_offset[0], config_.bno055.mag_offset[1], config_.bno055.mag_offset[2]);
+        RCLCPP_INFO(get_logger(), "BNO055 gyro offset: [%d, %d, %d]", config_.bno055.gyro_offset[0], config_.bno055.gyro_offset[1], config_.bno055.gyro_offset[2]);
 
         try{
             bno_ = std::make_shared<BNO055>("/dev/ttyUSB0");
@@ -36,6 +47,26 @@ namespace rbf_bno055_driver
             std::chrono::milliseconds(10),
             std::bind(&BNO055Driver::timerCallback, this));
 
+    }
+    void BNO055Driver::load_parameters() {
+        // Load serial port parameters
+        config_.serial_port.port = this->declare_parameter<std::string>("serial_port.name", "/dev/ttyUSB0");
+        config_.serial_port.baudrate = this->declare_parameter<int>("serial_port.baud_rate", 115200);
+
+        // Load BNO055 parameters
+        config_.bno055.acc_factor = this->declare_parameter<float>("BNO055.acc_factor", 100.0);
+        config_.bno055.mag_factor = this->declare_parameter<float>("BNO055.mag_factor", 16000000.0);
+        config_.bno055.gyro_factor = this->declare_parameter<float>("BNO055.gyro_factor", 900.0);
+        config_.bno055.grav_factor = this->declare_parameter<float>("BNO055.grav_factor", 100.0);
+        
+        auto acc_offset_param = this->declare_parameter<std::vector<int>>("BNO055.acc_offset", {0xFFEC, 0x00A5, 0xFFE8});
+        auto mag_offset_param = this->declare_parameter<std::vector<int>>("BNO055.mag_offset", {0xFFB4, 0xFE9E, 0x027D});
+        auto gyro_offset_param = this->declare_parameter<std::vector<int>>("BNO055.gyro_offset", {0x0002, 0xFFFF, 0xFFFF});
+
+        // Convert std::vector<int> to std::vector<int16_t>
+        config_.bno055.acc_offset.assign(acc_offset_param.begin(), acc_offset_param.end());
+        config_.bno055.mag_offset.assign(mag_offset_param.begin(), mag_offset_param.end());
+        config_.bno055.gyro_offset.assign(gyro_offset_param.begin(), gyro_offset_param.end());
     }
 
 
@@ -100,13 +131,13 @@ namespace rbf_bno055_driver
 
 
         // Acceleration data
-        double acc_factor = 100.0;
+        float acc_factor = config_.bno055.acc_factor;
         imu_msg.linear_acceleration.x = imu_data.acc_x / acc_factor;
         imu_msg.linear_acceleration.y = imu_data.acc_y / acc_factor;
         imu_msg.linear_acceleration.z = imu_data.acc_z / acc_factor;
         
         // Gyroscope data
-        double gyro_factor = 900.0;
+        float gyro_factor = config_.bno055.gyro_factor;
         imu_msg.angular_velocity.x = imu_data.gyro_x / gyro_factor;
         imu_msg.angular_velocity.y = imu_data.gyro_y / gyro_factor;
         imu_msg.angular_velocity.z = imu_data.gyro_z / gyro_factor;
@@ -118,7 +149,7 @@ namespace rbf_bno055_driver
         sensor_msgs::msg::MagneticField mag_msg;
         mag_msg.header.stamp = now();
         mag_msg.header.frame_id = "imu_link"; // Adjust frame_id as needed
-        double mag_factor = 16000000.0;
+        float mag_factor = config_.bno055.mag_factor;
 
         // Magnetometer data
         mag_msg.magnetic_field.x = mag_data.mag_x / mag_factor;
@@ -130,11 +161,11 @@ namespace rbf_bno055_driver
 
     geometry_msgs::msg::Vector3 BNO055Driver::create_grav_message(const RawBNO055Data& grav_data){
         geometry_msgs::msg::Vector3 grav_msg;
-
-        double grav_factor = 100.0;
-        grav_msg.x = grav_data.gravity_x;
-        grav_msg.y = grav_data.gravity_y;
-        grav_msg.z = grav_data.gravity_z;
+        float grav_factor = config_.bno055.grav_factor;
+        
+        grav_msg.x = grav_data.gravity_x / grav_factor;
+        grav_msg.y = grav_data.gravity_y / grav_factor;
+        grav_msg.z = grav_data.gravity_z / grav_factor;
         return grav_msg;
     }
 }
