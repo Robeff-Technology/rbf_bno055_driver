@@ -20,7 +20,7 @@ enum BNO055RegisterCommand : uint8_t
 
 enum BNO055OperationMode : uint8_t
 {
-  CONFIG = 0,
+  CONFIG = 0X00,
   ACCONLY,
   MAGONLY,
   GYROONLY,
@@ -78,7 +78,7 @@ enum BNO055Register : uint8_t
   LIA_DATA_X_LSB = 0x28,
 
   TEMP = 0x34,
-  CALIB_STAT,
+  CALIB_STAT = 0X35,
   ST_RESULT,
   INT_STA,
   SYS_CLK_STATUS,

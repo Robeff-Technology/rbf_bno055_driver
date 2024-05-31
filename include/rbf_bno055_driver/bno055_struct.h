@@ -31,23 +31,42 @@ namespace rbf_bno055_driver {
       int16_t gravity_z;
       int8_t temp;
     };
-    struct CalibrationBNO055Data
+    struct CalibrationBNO055Status
     {
-    int16_t accel_offset_x; /**< x acceleration offset */
-    int16_t accel_offset_y; /**< y acceleration offset */
-    int16_t accel_offset_z; /**< z acceleration offset */
-
-    int16_t mag_offset_x; /**< x magnetometer offset */
-    int16_t mag_offset_y; /**< y magnetometer offset */
-    int16_t mag_offset_z; /**< z magnetometer offset */
-
-    int16_t gyro_offset_x; /**< x gyroscrope offset */
-    int16_t gyro_offset_y; /**< y gyroscrope offset */
-    int16_t gyro_offset_z; /**< z gyroscrope offset */
-
-    int16_t accel_radius; /**< acceleration radius */
-
-    int16_t mag_radius; /**< magnetometer radius */
+      uint8_t system;
+      uint8_t gyro; 
+      uint8_t acc; 
+      uint8_t mag; 
+      uint8_t self_test; 
+      uint8_t sys_status;
+      uint8_t sys_error; 
+    };
+    struct CalibrationBNO055DataAcc
+    {
+      uint8_t x_lsb;
+      uint8_t x_msb;
+      uint8_t y_lsb;
+      uint8_t y_msb;
+      uint8_t z_lsb;
+      uint8_t z_msb;
+    };
+    struct CalibrationBNO055DataMag
+    {
+      uint8_t x_lsb;
+      uint8_t x_msb;
+      uint8_t y_lsb;
+      uint8_t y_msb;
+      uint8_t z_lsb;
+      uint8_t z_msb;
+    };
+    struct CalibrationBNO055DataGyro
+    {
+      uint8_t x_lsb;
+      uint8_t x_msb;
+      uint8_t y_lsb;
+      uint8_t y_msb;
+      uint8_t z_lsb;
+      uint8_t z_msb;
     };
   #pragma pack(pop)
 }

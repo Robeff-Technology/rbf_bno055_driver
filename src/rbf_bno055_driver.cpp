@@ -30,7 +30,8 @@ namespace rbf_bno055_driver
 
         // Initialize the sensor
         try{
-            bno_->initialize(config_.bno055.acc_offset, config_.bno055.acc_offset, config_.bno055.acc_offset, 0, 0);
+            bno_->initialize(config_.bno055.acc_offset, config_.bno055.mag_offset, config_.bno055.gyro_offset, 0, 0);
+            
         }
         catch (const BNO055::BNO055Exception& e){
             RCLCPP_ERROR(get_logger(), "BNO055 initialization error = %s", e.what());
@@ -44,7 +45,7 @@ namespace rbf_bno055_driver
 
         // Create a timer with a 10 ms period (100 Hz)
         timer_ = this->create_wall_timer(
-            std::chrono::milliseconds(10),
+            std::chrono::milliseconds(500),
             std::bind(&BNO055Driver::timerCallback, this));
 
     }
@@ -63,7 +64,7 @@ namespace rbf_bno055_driver
         auto mag_offset_param = this->declare_parameter<std::vector<int>>("BNO055.mag_offset", {0xFFB4, 0xFE9E, 0x027D});
         auto gyro_offset_param = this->declare_parameter<std::vector<int>>("BNO055.gyro_offset", {0x0002, 0xFFFF, 0xFFFF});
 
-        // Convert std::vector<int> to std::vector<int16_t>
+        // Convert std::vector<int> to std::vector<uint16_t>
         config_.bno055.acc_offset.assign(acc_offset_param.begin(), acc_offset_param.end());
         config_.bno055.mag_offset.assign(mag_offset_param.begin(), mag_offset_param.end());
         config_.bno055.gyro_offset.assign(gyro_offset_param.begin(), gyro_offset_param.end());
@@ -72,10 +73,16 @@ namespace rbf_bno055_driver
 
     void BNO055Driver::timerCallback(){
         RawBNO055Data raw_;
-        CalibrationBNO055Data calb_;
+        CalibrationBNO055DataAcc calb_acc_;
+        CalibrationBNO055DataMag calb_mag_;
+        CalibrationBNO055DataGyro calb_gyro_;
+        CalibrationBNO055Status calb_status_;
         try{
             raw_ = bno_->read_raw_data();
-            calb_ = bno_->read_calib_data();
+            calb_acc_ = bno_->read_calib_data_acc();
+            calb_mag_ = bno_->read_calib_data_mag();
+            calb_gyro_ = bno_->read_calib_data_gyro();
+            calb_status_ = bno_->read_calib_status();
         }
         catch (const BNO055::BNO055Exception& e){
         }

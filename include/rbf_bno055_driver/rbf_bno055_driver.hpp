@@ -34,9 +34,9 @@ namespace rbf_bno055_driver
             float mag_factor;
             float gyro_factor;
             float grav_factor;
-            std::vector<int16_t> mag_offset;
-            std::vector<int16_t> acc_offset;
-            std::vector<int16_t> gyro_offset;
+            std::vector<uint16_t> mag_offset;
+            std::vector<uint16_t> acc_offset;
+            std::vector<uint16_t> gyro_offset;
             int16_t acc_radius;
             int16_t mag_radius;
 
@@ -53,7 +53,7 @@ namespace rbf_bno055_driver
 
         void timerCallback();
         void load_parameters();
-        void load_startup_params();
+
         
 
         std::shared_ptr<BNO055> bno_;
