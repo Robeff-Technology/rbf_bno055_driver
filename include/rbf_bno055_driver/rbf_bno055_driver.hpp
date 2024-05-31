@@ -50,8 +50,12 @@ namespace rbf_bno055_driver
 
         rclcpp::TimerBase::SharedPtr timer_;
 
+        rclcpp::TimerBase::SharedPtr timer_2_;
+
 
         void timerCallback();
+        void newTimerCallback();
+        void readAndWriteNewOffsets();
         void load_parameters();
 
         

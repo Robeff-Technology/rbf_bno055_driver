@@ -237,22 +237,22 @@ namespace rbf_bno055_driver {
         CalibrationBNO055Status calib_status;
         std::memcpy(&calib_status, &receiving_buffer[2], sizeof(CalibrationBNO055Status));
 
-        const uint8_t read_calib_sys = (calib_status.system >> 6) & 0x03;
-        const uint8_t read_calib_gyro = (calib_status.system >> 4) & 0x03;
-        const uint8_t read_calib_acc = (calib_status.system >> 2) & 0x03;
-        const uint8_t read_calib_mag = calib_status.system & 0x03;
-        // const uint8_t read_self_test = data.self_test & 0x0F;
-        // const uint8_t read_sys_status = data.sys_status;
-        // const uint8_t read_sys_error = data.sys_error;
+        // const uint8_t read_calib_sys = (calib_status.system >> 6) & 0x03;
+        // const uint8_t read_calib_gyro = (calib_status.system >> 4) & 0x03;
+        // const uint8_t read_calib_acc = (calib_status.system >> 2) & 0x03;
+        // const uint8_t read_calib_mag = calib_status.system & 0x03;
+        // // const uint8_t read_self_test = data.self_test & 0x0F;
+        // // const uint8_t read_sys_status = data.sys_status;
+        // // const uint8_t read_sys_error = data.sys_error;
 
 
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "calib_sys: %d", read_calib_sys);
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "calib_acc: %d", read_calib_acc);
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "calib_gyr: %d", read_calib_gyro);
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "calib_mag: %d", read_calib_mag);
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "calib_sys: %d", calib_status.system);
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "calib_acc: %d", calib_status.acc);
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "calib_gyr: %d", calib_status.gyro);
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "calib_mag: %d", calib_status.mag);
 
 
-        if(read_calib_sys == 3 && read_calib_gyro == 3 && read_calib_acc == 3 && read_calib_mag == 3){
+        if(calib_status.system == 3 && calib_status.acc == 3 && calib_status.gyro == 3 && calib_status.mag == 3){
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Calibration data: Fully calibrated");
         }
         else{

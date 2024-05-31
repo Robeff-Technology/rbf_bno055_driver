@@ -33,13 +33,14 @@ namespace rbf_bno055_driver {
     };
     struct CalibrationBNO055Status
     {
-      uint8_t system;
-      uint8_t gyro; 
-      uint8_t acc; 
-      uint8_t mag; 
-      uint8_t self_test; 
-      uint8_t sys_status;
-      uint8_t sys_error; 
+      uint8_t system : 2;
+      uint8_t gyro : 2; 
+      uint8_t acc : 2; 
+      uint8_t mag : 2; 
+      uint8_t self_test : 1; 
+      uint8_t sys_status : 1;
+      uint8_t sys_error : 1;
+      uint8_t reserved : 5; 
     };
     struct CalibrationBNO055DataAcc
     {

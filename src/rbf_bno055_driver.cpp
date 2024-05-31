@@ -45,8 +45,12 @@ namespace rbf_bno055_driver
 
         // Create a timer with a 10 ms period (100 Hz)
         timer_ = this->create_wall_timer(
-            std::chrono::milliseconds(500),
+            std::chrono::milliseconds(10),
             std::bind(&BNO055Driver::timerCallback, this));
+    
+        timer_2_ = this->create_wall_timer(
+            std::chrono::milliseconds(500),
+            std::bind(&BNO055Driver::newTimerCallback, this));
 
     }
     void BNO055Driver::load_parameters() {
@@ -73,16 +77,8 @@ namespace rbf_bno055_driver
 
     void BNO055Driver::timerCallback(){
         RawBNO055Data raw_;
-        CalibrationBNO055DataAcc calb_acc_;
-        CalibrationBNO055DataMag calb_mag_;
-        CalibrationBNO055DataGyro calb_gyro_;
-        CalibrationBNO055Status calb_status_;
         try{
             raw_ = bno_->read_raw_data();
-            calb_acc_ = bno_->read_calib_data_acc();
-            calb_mag_ = bno_->read_calib_data_mag();
-            calb_gyro_ = bno_->read_calib_data_gyro();
-            calb_status_ = bno_->read_calib_status();
         }
         catch (const BNO055::BNO055Exception& e){
         }
@@ -92,6 +88,51 @@ namespace rbf_bno055_driver
         pub_mag_->publish(create_mag_message(raw_));
         pub_grav_->publish(create_grav_message(raw_));
 
+    }
+
+    void BNO055Driver::newTimerCallback() {
+        CalibrationBNO055Status calib_status_;
+        try {
+                calib_status_ = bno_->read_calib_status();
+                RCLCPP_INFO(get_logger(), "System: %d, Gyro: %d, Acc: %d, Mag: %d", calib_status_.system, calib_status_.gyro, calib_status_.acc, calib_status_.mag);
+            if (calib_status_.system == 3 && calib_status_.gyro == 3 && calib_status_.acc == 3 && calib_status_.mag == 3) {
+                RCLCPP_INFO(get_logger(), "Calibration is fully done.");
+                // Calibration is fully done, read new offset values
+                readAndWriteNewOffsets();
+                timer_2_->cancel();
+
+            }
+        } 
+        catch (const BNO055::BNO055Exception& e) {
+            RCLCPP_ERROR(get_logger(), "Error reading calibration status: %s", e.what());
+        }
+        
+        RCLCPP_INFO(get_logger(), "Timer 2 callback.");
+
+    }
+    
+    void BNO055Driver::readAndWriteNewOffsets() {
+        CalibrationBNO055DataAcc calb_acc_;
+        CalibrationBNO055DataMag calb_mag_;
+        CalibrationBNO055DataGyro calb_gyro_;
+        try {
+            RCLCPP_INFO(get_logger(), "GIRDIMMM.");
+            calb_acc_ = bno_->read_calib_data_acc();
+            calb_mag_ = bno_->read_calib_data_mag();
+            calb_gyro_ = bno_->read_calib_data_gyro();
+
+            // Write new offsets to the device
+            std::vector<uint16_t> new_acc_offset = {calb_acc_.x_msb << 8 | calb_acc_.x_lsb, calb_acc_.y_msb << 8 | calb_acc_.y_lsb, calb_acc_.z_msb << 8 | calb_acc_.z_lsb};
+            std::vector<uint16_t> new_mag_offset = {calb_mag_.x_msb << 8 | calb_mag_.x_lsb, calb_mag_.y_msb << 8 | calb_mag_.y_lsb, calb_mag_.z_msb << 8 | calb_mag_.z_lsb};
+            std::vector<uint16_t> new_gyro_offset = {calb_gyro_.x_msb << 8 | calb_gyro_.x_lsb, calb_gyro_.y_msb << 8 | calb_gyro_.y_lsb};
+            
+            bno_->initialize(new_acc_offset, new_mag_offset, new_gyro_offset, 0, 0);
+
+        
+            RCLCPP_INFO(get_logger(), "New offsets have been written to the device.");
+        } catch (const BNO055::BNO055Exception& e) {
+            RCLCPP_ERROR(get_logger(), "Error reading or writing new offsets: %s", e.what());
+        }
     }
 
     sensor_msgs::msg::Imu BNO055Driver::create_raw_imu_message(const RawBNO055Data& raw_data){

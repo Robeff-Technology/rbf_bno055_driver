@@ -9,11 +9,20 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(diagnostic_msgs REQUIRED)
 
 
 include_directories(include)
+
+set(srv_files
+  "srv/ReadCalibrationData.srv"
+)
+
+rosidl_generate_interfaces(${PROJECT_NAME}
+  ${srv_files}
+)
 
 add_library(rbf_bno055_driver_component SHARED
   src/rbf_bno055_driver.cpp
@@ -27,10 +36,13 @@ ament_target_dependencies(rbf_bno055_driver_component
   sensor_msgs
 )
 
+rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
+target_link_libraries(rbf_bno055_driver_component "${cpp_typesupport_target}") 
+
 rclcpp_components_register_node(
   rbf_bno055_driver_component
   PLUGIN "rbf_bno055_driver::BNO055Driver"
-  EXECUTABLE rbf_bno055_driver
+  EXECUTABLE rbf_bno055_driver_node
 )
 
 ament_export_targets(export_rbf_bno055_driver_component)
