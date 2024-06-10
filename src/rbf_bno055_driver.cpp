@@ -3,12 +3,10 @@
 #include "rbf_bno055_driver/bno055_reg.h"
 #include <rclcpp/clock.hpp>
 
-
 namespace rbf_bno055_driver
 {
     BNO055Driver::BNO055Driver(const rclcpp::NodeOptions& options) : Node("rbf_bno055_driver", options) {
         load_parameters();
-
 
         RCLCPP_INFO(get_logger(), "Serial port name: %s", config_.serial_port.port.c_str());
         RCLCPP_INFO(get_logger(), "Serial port baud rate: %d", config_.serial_port.baudrate);
@@ -16,7 +14,7 @@ namespace rbf_bno055_driver
         RCLCPP_INFO(get_logger(), "BNO055 mag factor: %f", config_.bno055.mag_factor);
         RCLCPP_INFO(get_logger(), "BNO055 gyro factor: %f", config_.bno055.gyro_factor);
         RCLCPP_INFO(get_logger(), "BNO055 grav factor: %f", config_.bno055.grav_factor);
-        // RCLCPP_INFO(get_logger(), "BNO055 set offset: %s", config_.bno055.set_offset);
+        RCLCPP_INFO(get_logger(), "BNO055 set offset: %d", config_.bno055.set_offset);
         RCLCPP_INFO(get_logger(), "BNO055 acc offset: [%d, %d, %d]", config_.bno055.acc_offset[0], config_.bno055.acc_offset[1], config_.bno055.acc_offset[2]);
         RCLCPP_INFO(get_logger(), "BNO055 mag offset: [%d, %d, %d]", config_.bno055.mag_offset[0], config_.bno055.mag_offset[1], config_.bno055.mag_offset[2]);
         RCLCPP_INFO(get_logger(), "BNO055 gyro offset: [%d, %d, %d]", config_.bno055.gyro_offset[0], config_.bno055.gyro_offset[1], config_.bno055.gyro_offset[2]);
@@ -29,11 +27,10 @@ namespace rbf_bno055_driver
             rclcpp::shutdown();
         }
 
-        RCLCPP_INFO(get_logger(), "ife geldim");
+        // Initialize the sensor with configured offsets
         if(config_.bno055.set_offset == true){
         try{
             bno_->initialize_calib(config_.bno055.acc_offset, config_.bno055.mag_offset, config_.bno055.gyro_offset, config_.bno055.acc_radius, config_.bno055.mag_radius);
-            RCLCPP_INFO(get_logger(), "init_calibe girdim");
         }
         catch (const BNO055::BNO055Exception& e){
             RCLCPP_ERROR(get_logger(), "BNO055 initialization error = %s", e.what());
@@ -45,7 +42,6 @@ namespace rbf_bno055_driver
         else{        
         try{
             bno_->initialize();
-            RCLCPP_INFO(get_logger(), "inite girdim");
         }
         catch (const BNO055::BNO055Exception& e){
             RCLCPP_ERROR(get_logger(), "BNO055 initialization error = %s", e.what());
@@ -58,16 +54,17 @@ namespace rbf_bno055_driver
         pub_imu_ = this->create_publisher<sensor_msgs::msg::Imu>("imu", 10);
         pub_mag_ = this->create_publisher<sensor_msgs::msg::MagneticField>("mag", 10);
         pub_grav_ = this->create_publisher<geometry_msgs::msg::Vector3>("gravity", 10);
-        RCLCPP_INFO(get_logger(), "Publishers have been created.");
 
         // Create a timer with a 10 ms period (100 Hz)
         timer_ = this->create_wall_timer(
             std::chrono::milliseconds(10),
             std::bind(&BNO055Driver::timerCallback, this));
-    
-        timer_2_ = this->create_wall_timer(
+        if(config_.bno055.set_offset == false){
+            timer_2_ = this->create_wall_timer(
             std::chrono::milliseconds(500),
             std::bind(&BNO055Driver::newTimerCallback, this));
+        }
+
         }
     void BNO055Driver::load_parameters() {
         // Load serial port parameters
@@ -110,21 +107,17 @@ namespace rbf_bno055_driver
     void BNO055Driver::newTimerCallback() {
         CalibrationBNO055Status calib_status_;
         try {
-                calib_status_ = bno_->read_calib_status();
-                RCLCPP_INFO(get_logger(), "System: %d, Gyro: %d, Acc: %d, Mag: %d", calib_status_.system, calib_status_.gyro, calib_status_.acc, calib_status_.mag);
+            calib_status_ = bno_->read_calib_status();
+
             if (calib_status_.system == 3 && calib_status_.gyro == 3 && calib_status_.acc == 3 && calib_status_.mag == 3) {
                 RCLCPP_INFO(get_logger(), "Calibration is fully done.");
-                // Calibration is fully done, read new offset values
                 readAndWriteNewOffsets();
                 timer_2_->cancel();
-
             }
         } 
         catch (const BNO055::BNO055Exception& e) {
             RCLCPP_ERROR(get_logger(), "Error reading calibration status: %s", e.what());
         }
-        
-        RCLCPP_INFO(get_logger(), "Timer 2 callback.");
 
     }
     
@@ -133,7 +126,6 @@ namespace rbf_bno055_driver
         CalibrationBNO055DataMag calb_mag_;
         CalibrationBNO055DataGyro calb_gyro_;
         try {
-            RCLCPP_INFO(get_logger(), "GIRDIMMM.");
             calb_acc_ = bno_->read_calib_data_acc();
             calb_mag_ = bno_->read_calib_data_mag();
             calb_gyro_ = bno_->read_calib_data_gyro();
@@ -143,10 +135,9 @@ namespace rbf_bno055_driver
             std::vector<uint16_t> new_mag_offset = {calb_mag_.x_msb << 8 | calb_mag_.x_lsb, calb_mag_.y_msb << 8 | calb_mag_.y_lsb, calb_mag_.z_msb << 8 | calb_mag_.z_lsb};
             std::vector<uint16_t> new_gyro_offset = {calb_gyro_.x_msb << 8 | calb_gyro_.x_lsb, calb_gyro_.y_msb << 8 | calb_gyro_.y_lsb};
             
-            
             bno_->initialize_calib(new_acc_offset, new_mag_offset, new_gyro_offset, 0, 0);
 
-
+            RCLCPP_INFO(get_logger(), "New offsets have been written to the device.");
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_accel_offset_x : %d", new_acc_offset[0]);
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_accel_offset_x : %d", new_acc_offset[1]);
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_accel_offset_x : %d", new_acc_offset[2]);
@@ -159,7 +150,6 @@ namespace rbf_bno055_driver
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_accel_offset_x : %d", new_gyro_offset[1]);
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_accel_offset_x : %d", new_gyro_offset[2]);
         
-            RCLCPP_INFO(get_logger(), "New offsets have been written to the device.");
         } catch (const BNO055::BNO055Exception& e) {
             RCLCPP_ERROR(get_logger(), "Error reading or writing new offsets: %s", e.what());
         }

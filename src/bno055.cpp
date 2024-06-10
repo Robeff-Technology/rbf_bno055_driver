@@ -82,51 +82,6 @@ namespace rbf_bno055_driver {
             throw BNO055Exception("UNIT SEL response error");
         }
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "UNIT SEL response success");
-
-        //// SET ACC OFFSET
-        // size = create_write_command_buffer(BNO055Register::ACCEL_OFFSET_X_LSB_ADDR, create_offset_array(acc_offset), 6, sending_buffer);
-        // serial_port_.write(reinterpret_cast<char*>(sending_buffer), size);
-        // serial_port_.read(reinterpret_cast<char*>(receiving_buffer), 2);
-        // if(check_write_status(receiving_buffer) == false){
-        //     throw BNO055Exception("ACC OFFSET response error");
-        // }
-        // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "ACC OFFSET response success");
-
-        // // SET MAG OFFSET
-        // size = create_write_command_buffer(BNO055Register::MAG_OFFSET_X_LSB_ADDR, create_offset_array(mag_offset), 6, sending_buffer);
-        // serial_port_.write(reinterpret_cast<char*>(sending_buffer), size);
-        // serial_port_.read(reinterpret_cast<char*>(receiving_buffer), 2);
-        // if(check_write_status(receiving_buffer) == false){
-        //     throw BNO055Exception("MAG OFFSET response error");
-        // }
-        // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "MAG OFFSET response success");
-
-        // // SET GYRO OFFSET
-        // size = create_write_command_buffer(BNO055Register::GYRO_OFFSET_X_LSB_ADDR, create_offset_array(gyro_offset), 6, sending_buffer);
-        // serial_port_.write(reinterpret_cast<char*>(sending_buffer), size);
-        // serial_port_.read(reinterpret_cast<char*>(receiving_buffer), 2);
-        // if(check_write_status(receiving_buffer) == false){
-        //     throw BNO055Exception("GYRO OFFSET response error");
-        // }
-        // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "GYRO OFFSET response success");
-
-        // // SET ACC RADIUS
-        // size = create_write_command_buffer(BNO055Register::ACCEL_RADIUS_LSB_ADDR, create_radius_array(acc_radius), 2, sending_buffer);
-        // serial_port_.write(reinterpret_cast<char*>(sending_buffer), size);
-        // serial_port_.read(reinterpret_cast<char*>(receiving_buffer), 2);
-        // if(check_write_status(receiving_buffer) == false){
-        //     throw BNO055Exception("ACC RADIUS response error");
-        // } 
-        // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "ACC RADIUS response success");
-
-        // // SET MAG RADIUS
-        // size = create_write_command_buffer(BNO055Register::MAG_RADIUS_LSB_ADDR, create_radius_array(mag_radius), 2, sending_buffer);
-        // serial_port_.write(reinterpret_cast<char*>(sending_buffer), size);
-        // serial_port_.read(reinterpret_cast<char*>(receiving_buffer), 2);
-        // if(check_write_status(receiving_buffer) == false){
-        //     throw BNO055Exception("MAG RADIUS response error");
-        // }
-        // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "MAG RADIUS response success");
         
         // SET NDOF MODE
         operation_mode = BNO055OperationMode::NDOF;
@@ -141,7 +96,7 @@ namespace rbf_bno055_driver {
     }
 
     void BNO055::initialize_calib(std::vector<uint16_t>& acc_offset, std::vector<uint16_t>& mag_offset, std::vector<uint16_t>& gyro_offset, int16_t acc_radius, int16_t mag_radius) {
-                size_t size = 0;
+        size_t size = 0;
         
         size = create_read_command_buffer(BNO055Register::CHIP_ID, 1, sending_buffer);
         serial_port_.write(reinterpret_cast<char*>(sending_buffer), size);
@@ -154,7 +109,7 @@ namespace rbf_bno055_driver {
                 throw BNO055Exception("Error reading chip id");
             }
         }
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "CHIP ID response success");
+
 
         // SET OPERATION MODE
         uint8_t operation_mode = BNO055OperationMode::CONFIG;
@@ -164,7 +119,7 @@ namespace rbf_bno055_driver {
         if(check_write_status(receiving_buffer) == false){
             throw BNO055Exception("OPERATION MODE response error");
         }
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "OPERATION MODE response success");
+
 
         // SET POWER MODE
         uint8_t power_mode = BNO055PowerMode::NORMAL;
@@ -174,7 +129,7 @@ namespace rbf_bno055_driver {
         if(check_write_status(receiving_buffer) == false){
             throw BNO055Exception("POWER MODE response error");
         }
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "POWER MODE response success");
+
 
         // SET PAGE ID
         uint8_t page_id = 0;
@@ -184,7 +139,7 @@ namespace rbf_bno055_driver {
         if(check_write_status(receiving_buffer) == false){
             throw BNO055Exception("PAGE ID response error");
         }
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "PAGE ID response success");
+
 
         // SELECT OSCILLATOR
         uint8_t osc_sel = 0x00;
@@ -194,7 +149,7 @@ namespace rbf_bno055_driver {
         if(check_write_status(receiving_buffer) == false){
             throw BNO055Exception("OSC SEL response error");
         }
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "OSC SEL response success");
+
 
         // SET UNITS 
         uint8_t units = 0x02;
@@ -204,7 +159,7 @@ namespace rbf_bno055_driver {
         if(check_write_status(receiving_buffer) == false){
             throw BNO055Exception("UNIT SEL response error");
         }
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "UNIT SEL response success");
+
 
         // SET ACC OFFSET
         size = create_write_command_buffer(BNO055Register::ACCEL_OFFSET_X_LSB_ADDR, create_offset_array(acc_offset), 6, sending_buffer);
@@ -249,7 +204,7 @@ namespace rbf_bno055_driver {
         if(check_write_status(receiving_buffer) == false){
             throw BNO055Exception("MAG RADIUS response error");
         }
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "MAG RADIUS response success");
+
         
         // SET NDOF MODE
         operation_mode = BNO055OperationMode::NDOF;
@@ -259,7 +214,7 @@ namespace rbf_bno055_driver {
         if(check_write_status(receiving_buffer) == false){
             throw BNO055Exception("OPERATION MODE response error");
         } 
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "NDOF MODE response success");
+
 
     }
 
@@ -364,34 +319,10 @@ namespace rbf_bno055_driver {
         CalibrationBNO055Status calib_status;
         std::memcpy(&calib_status, &receiving_buffer[2], sizeof(CalibrationBNO055Status));
 
-        // const uint8_t read_calib_sys = (calib_status.system >> 6) & 0x03;
-        // const uint8_t read_calib_gyro = (calib_status.system >> 4) & 0x03;
-        // const uint8_t read_calib_acc = (calib_status.system >> 2) & 0x03;
-        // const uint8_t read_calib_mag = calib_status.system & 0x03;
-        // // const uint8_t read_self_test = data.self_test & 0x0F;
-        // // const uint8_t read_sys_status = data.sys_status;
-        // // const uint8_t read_sys_error = data.sys_error;
-
-
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "calib_sys: %d", calib_status.system);
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "calib_acc: %d", calib_status.acc);
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "calib_gyr: %d", calib_status.gyro);
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "calib_mag: %d", calib_status.mag);
-
-
-        if(calib_status.system == 3 && calib_status.acc == 3 && calib_status.gyro == 3 && calib_status.mag == 3){
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Calibration data: Fully calibrated");
-        }
-        else{
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Calibration data: Not fully calibrated");
-        }
-
-        // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Calibration data:");
-        // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "self_test: %d", self_tes);
-        // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Calibration data:");
-        // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "sys_status: %d", sys_statu);
-        // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Calibration data:");
-        // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "sys_error: %d", sys_erro);
 
         return calib_status;
     }
@@ -405,7 +336,6 @@ namespace rbf_bno055_driver {
             memset(receiving_buffer, 0, sizeof(CalibrationBNO055DataAcc) + 2);
             throw BNO055Exception("CALIB DATA response error");
         }
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "RECEVİNG_BUFFER_BUDUR : %d", receiving_buffer[2]);
         CalibrationBNO055DataAcc acc_offset;
         std::memcpy(&acc_offset, &receiving_buffer[2], sizeof(CalibrationBNO055DataAcc));
 
@@ -424,8 +354,6 @@ namespace rbf_bno055_driver {
         CalibrationBNO055DataMag mag_offset;
         std::memcpy(&mag_offset, &receiving_buffer[2], sizeof(CalibrationBNO055DataMag));
         
-
-
         return mag_offset;
     }
 
@@ -443,16 +371,6 @@ namespace rbf_bno055_driver {
 
         return gyro_offset;
     }
-
-    
-
-
-
-
-
-
-
-
 
 } // namespace rbf_bno055_driver
 

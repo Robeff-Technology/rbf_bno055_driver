@@ -28,8 +28,7 @@ namespace rbf_bno055_driver
             std::string port;
             int baudrate;
         }; 
-        struct BNO055{
-            
+        struct BNO055{    
             float acc_factor;
             float mag_factor;
             float gyro_factor;
@@ -40,26 +39,19 @@ namespace rbf_bno055_driver
             std::vector<uint16_t> gyro_offset;
             int16_t acc_radius;
             int16_t mag_radius;
-
         };
         BNO055 bno055;
         SerialPort serial_port;
     };
     Config config_;
     private:
-
-
         rclcpp::TimerBase::SharedPtr timer_;
-
         rclcpp::TimerBase::SharedPtr timer_2_;
-
 
         void timerCallback();
         void newTimerCallback();
         void readAndWriteNewOffsets();
         void load_parameters();
-
-        
 
         std::shared_ptr<BNO055> bno_;
         rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr pub_imu_raw_;
@@ -71,9 +63,6 @@ namespace rbf_bno055_driver
         sensor_msgs::msg::MagneticField create_mag_message(const RawBNO055Data& mag_data);
         geometry_msgs::msg::Vector3 create_grav_message(const RawBNO055Data& grav_data);
         
-
-
-
     };
 } // namespace rbf_bno055_driver
 
