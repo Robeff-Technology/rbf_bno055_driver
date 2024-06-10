@@ -31,7 +31,9 @@ public:
         serial_port_.close();
     }
 
-    void initialize(std::vector<uint16_t>& acc_offset, std::vector<uint16_t>& mag_offset, std::vector<uint16_t>& gyro_offset, int16_t acc_radius, int16_t mag_radius);
+    void initialize();
+    void initialize_calib(std::vector<uint16_t>& acc_offset, std::vector<uint16_t>& mag_offset, std::vector<uint16_t>& gyro_offset, int16_t acc_radius, int16_t mag_radius);
+
     RawBNO055Data read_raw_data();
     CalibrationBNO055DataAcc read_calib_data_acc();
     CalibrationBNO055DataMag read_calib_data_mag();

@@ -9,6 +9,7 @@
       mag_factor: 16000000.0
       gyro_factor: 900.0
       grav_factor: 100.0
+      set_offset: false
       acc_offset: [0xFFEC, 0x00A5, 0xFFE8]
       mag_offset: [0xFFB4, 0xFE9E, 0x027D]
       gyro_offset: [0x0002, 0xFFFF, 0xFFFF]

@@ -16,6 +16,7 @@ namespace rbf_bno055_driver
         RCLCPP_INFO(get_logger(), "BNO055 mag factor: %f", config_.bno055.mag_factor);
         RCLCPP_INFO(get_logger(), "BNO055 gyro factor: %f", config_.bno055.gyro_factor);
         RCLCPP_INFO(get_logger(), "BNO055 grav factor: %f", config_.bno055.grav_factor);
+        // RCLCPP_INFO(get_logger(), "BNO055 set offset: %s", config_.bno055.set_offset);
         RCLCPP_INFO(get_logger(), "BNO055 acc offset: [%d, %d, %d]", config_.bno055.acc_offset[0], config_.bno055.acc_offset[1], config_.bno055.acc_offset[2]);
         RCLCPP_INFO(get_logger(), "BNO055 mag offset: [%d, %d, %d]", config_.bno055.mag_offset[0], config_.bno055.mag_offset[1], config_.bno055.mag_offset[2]);
         RCLCPP_INFO(get_logger(), "BNO055 gyro offset: [%d, %d, %d]", config_.bno055.gyro_offset[0], config_.bno055.gyro_offset[1], config_.bno055.gyro_offset[2]);
@@ -28,20 +29,36 @@ namespace rbf_bno055_driver
             rclcpp::shutdown();
         }
 
-        // Initialize the sensor
+        RCLCPP_INFO(get_logger(), "ife geldim");
+        if(config_.bno055.set_offset == true){
         try{
-            bno_->initialize(config_.bno055.acc_offset, config_.bno055.mag_offset, config_.bno055.gyro_offset, 0, 0);
-            
+            bno_->initialize_calib(config_.bno055.acc_offset, config_.bno055.mag_offset, config_.bno055.gyro_offset, config_.bno055.acc_radius, config_.bno055.mag_radius);
+            RCLCPP_INFO(get_logger(), "init_calibe girdim");
         }
         catch (const BNO055::BNO055Exception& e){
             RCLCPP_ERROR(get_logger(), "BNO055 initialization error = %s", e.what());
             rclcpp::shutdown();
         }
+               
+        }
+        // Initialize the sensor
+        else{        
+        try{
+            bno_->initialize();
+            RCLCPP_INFO(get_logger(), "inite girdim");
+        }
+        catch (const BNO055::BNO055Exception& e){
+            RCLCPP_ERROR(get_logger(), "BNO055 initialization error = %s", e.what());
+            rclcpp::shutdown();
+        }} 
 
+
+       // Initialize the sensor
         pub_imu_raw_ = this->create_publisher<sensor_msgs::msg::Imu>("imu_raw", 10);
         pub_imu_ = this->create_publisher<sensor_msgs::msg::Imu>("imu", 10);
         pub_mag_ = this->create_publisher<sensor_msgs::msg::MagneticField>("mag", 10);
         pub_grav_ = this->create_publisher<geometry_msgs::msg::Vector3>("gravity", 10);
+        RCLCPP_INFO(get_logger(), "Publishers have been created.");
 
         // Create a timer with a 10 ms period (100 Hz)
         timer_ = this->create_wall_timer(
@@ -51,8 +68,7 @@ namespace rbf_bno055_driver
         timer_2_ = this->create_wall_timer(
             std::chrono::milliseconds(500),
             std::bind(&BNO055Driver::newTimerCallback, this));
-
-    }
+        }
     void BNO055Driver::load_parameters() {
         // Load serial port parameters
         config_.serial_port.port = this->declare_parameter<std::string>("serial_port.name", "/dev/ttyUSB0");
@@ -63,6 +79,7 @@ namespace rbf_bno055_driver
         config_.bno055.mag_factor = this->declare_parameter<float>("BNO055.mag_factor", 16000000.0);
         config_.bno055.gyro_factor = this->declare_parameter<float>("BNO055.gyro_factor", 900.0);
         config_.bno055.grav_factor = this->declare_parameter<float>("BNO055.grav_factor", 100.0);
+        config_.bno055.set_offset = this->declare_parameter<bool>("BNO055.set_offset", "true");
         
         auto acc_offset_param = this->declare_parameter<std::vector<int>>("BNO055.acc_offset", {0xFFEC, 0x00A5, 0xFFE8});
         auto mag_offset_param = this->declare_parameter<std::vector<int>>("BNO055.mag_offset", {0xFFB4, 0xFE9E, 0x027D});
@@ -126,8 +143,21 @@ namespace rbf_bno055_driver
             std::vector<uint16_t> new_mag_offset = {calb_mag_.x_msb << 8 | calb_mag_.x_lsb, calb_mag_.y_msb << 8 | calb_mag_.y_lsb, calb_mag_.z_msb << 8 | calb_mag_.z_lsb};
             std::vector<uint16_t> new_gyro_offset = {calb_gyro_.x_msb << 8 | calb_gyro_.x_lsb, calb_gyro_.y_msb << 8 | calb_gyro_.y_lsb};
             
-            bno_->initialize(new_acc_offset, new_mag_offset, new_gyro_offset, 0, 0);
+            
+            bno_->initialize_calib(new_acc_offset, new_mag_offset, new_gyro_offset, 0, 0);
 
+
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_accel_offset_x : %d", new_acc_offset[0]);
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_accel_offset_x : %d", new_acc_offset[1]);
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_accel_offset_x : %d", new_acc_offset[2]);
+
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_accel_offset_x : %d", new_mag_offset[0]);
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_accel_offset_x : %d", new_mag_offset[1]);
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_accel_offset_x : %d", new_mag_offset[2]);
+
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_accel_offset_x : %d", new_gyro_offset[0]);
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_accel_offset_x : %d", new_gyro_offset[1]);
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_accel_offset_x : %d", new_gyro_offset[2]);
         
             RCLCPP_INFO(get_logger(), "New offsets have been written to the device.");
         } catch (const BNO055::BNO055Exception& e) {
