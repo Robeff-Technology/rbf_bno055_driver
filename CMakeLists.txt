@@ -16,13 +16,7 @@ find_package(diagnostic_msgs REQUIRED)
 
 include_directories(include)
 
-set(srv_files
-  "srv/ReadCalibrationData.srv"
-)
 
-rosidl_generate_interfaces(${PROJECT_NAME}
-  ${srv_files}
-)
 
 add_library(rbf_bno055_driver_component SHARED
   src/rbf_bno055_driver.cpp
@@ -36,7 +30,7 @@ ament_target_dependencies(rbf_bno055_driver_component
   sensor_msgs
 )
 
-rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
+
 target_link_libraries(rbf_bno055_driver_component "${cpp_typesupport_target}") 
 
 rclcpp_components_register_node(

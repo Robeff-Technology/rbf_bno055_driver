@@ -14,6 +14,7 @@ namespace rbf_bno055_driver
         RCLCPP_INFO(get_logger(), "BNO055 mag factor: %f", config_.bno055.mag_factor);
         RCLCPP_INFO(get_logger(), "BNO055 gyro factor: %f", config_.bno055.gyro_factor);
         RCLCPP_INFO(get_logger(), "BNO055 grav factor: %f", config_.bno055.grav_factor);
+        RCLCPP_INFO(get_logger(), "BNO055 data frequency: %f", config_.bno055.data_frequency);
         RCLCPP_INFO(get_logger(), "BNO055 set offset: %d", config_.bno055.set_offset);
         RCLCPP_INFO(get_logger(), "BNO055 make calibration: %d", config_.bno055.make_calibration);
         RCLCPP_INFO(get_logger(), "BNO055 acc offset: [%d, %d, %d]", config_.bno055.acc_offset[0], config_.bno055.acc_offset[1], config_.bno055.acc_offset[2]);
@@ -56,9 +57,10 @@ namespace rbf_bno055_driver
         pub_mag_ = this->create_publisher<sensor_msgs::msg::MagneticField>("mag", 10);
         pub_grav_ = this->create_publisher<geometry_msgs::msg::Vector3>("gravity", 10);
 
-        // Create a timer with a 10 ms period (100 Hz)
+        // Create a timer
+        freq = (1 / config_.bno055.data_frequency) * 1000;
         timer_ = this->create_wall_timer(
-            std::chrono::milliseconds(10),
+            std::chrono::milliseconds(freq),
             std::bind(&BNO055Driver::timerCallback, this));
         if(config_.bno055.make_calibration == true){
             timer_2_ = this->create_wall_timer(
@@ -77,6 +79,7 @@ namespace rbf_bno055_driver
         config_.bno055.mag_factor = this->declare_parameter<float>("BNO055.mag_factor", 16000000.0);
         config_.bno055.gyro_factor = this->declare_parameter<float>("BNO055.gyro_factor", 900.0);
         config_.bno055.grav_factor = this->declare_parameter<float>("BNO055.grav_factor", 100.0);
+        config_.bno055.data_frequency = this->declare_parameter<float>("BNO055.data_frequency", 100.0);
         config_.bno055.set_offset = this->declare_parameter<bool>("BNO055.set_offset", "true");
         config_.bno055.make_calibration = this->declare_parameter<bool>("BNO055.make_calibration", "true");
         
@@ -199,18 +202,35 @@ namespace rbf_bno055_driver
         imu_msg.orientation.z = q.z / norm;
         imu_msg.orientation.w = q.w / norm;
 
+        // Default covariance value
+        // values taken from this ROS1 driver from octanis:
+        // https://github.com/Octanis1/bosch_imu_driver/commit/d1132e27ecff46a63c128f7ecacc245c98b2811a
+
+        imu_msg.orientation_covariance[0] = 0.0159;
+        imu_msg.orientation_covariance[4] = 0.0159;
+        imu_msg.orientation_covariance[8] = 0.0159;
+
 
         // Acceleration data
         float acc_factor = config_.bno055.acc_factor;
         imu_msg.linear_acceleration.x = imu_data.acc_x / acc_factor;
         imu_msg.linear_acceleration.y = imu_data.acc_y / acc_factor;
         imu_msg.linear_acceleration.z = imu_data.acc_z / acc_factor;
-        
+
+        imu_msg.linear_acceleration_covariance[0] = 0.017;
+        imu_msg.linear_acceleration_covariance[4] = 0.017;
+        imu_msg.linear_acceleration_covariance[8] = 0.017;
+
         // Gyroscope data
         float gyro_factor = config_.bno055.gyro_factor;
         imu_msg.angular_velocity.x = imu_data.gyro_x / gyro_factor;
         imu_msg.angular_velocity.y = imu_data.gyro_y / gyro_factor;
         imu_msg.angular_velocity.z = imu_data.gyro_z / gyro_factor;
+
+        imu_msg.angular_velocity_covariance[0] = 0.04;
+        imu_msg.angular_velocity_covariance[4] = 0.04;
+        imu_msg.angular_velocity_covariance[8] = 0.04;
+
         return imu_msg;
     }
 

@@ -33,6 +33,7 @@ namespace rbf_bno055_driver
             float mag_factor;
             float gyro_factor;
             float grav_factor;
+            float data_frequency;
             bool set_offset;
             bool make_calibration;
             std::vector<uint16_t> mag_offset;
@@ -48,6 +49,7 @@ namespace rbf_bno055_driver
     private:
         rclcpp::TimerBase::SharedPtr timer_;
         rclcpp::TimerBase::SharedPtr timer_2_;
+        int freq;
 
         void timerCallback();
         void newTimerCallback();

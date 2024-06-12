@@ -1,8 +1,0 @@
-int64 request
----
-bool success
-int64 system_status
-int64 gyro_status
-int64 accel_status
-int64 mag_status
-
