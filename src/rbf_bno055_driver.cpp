@@ -15,6 +15,7 @@ namespace rbf_bno055_driver
         RCLCPP_INFO(get_logger(), "BNO055 gyro factor: %f", config_.bno055.gyro_factor);
         RCLCPP_INFO(get_logger(), "BNO055 grav factor: %f", config_.bno055.grav_factor);
         RCLCPP_INFO(get_logger(), "BNO055 set offset: %d", config_.bno055.set_offset);
+        RCLCPP_INFO(get_logger(), "BNO055 make calibration: %d", config_.bno055.make_calibration);
         RCLCPP_INFO(get_logger(), "BNO055 acc offset: [%d, %d, %d]", config_.bno055.acc_offset[0], config_.bno055.acc_offset[1], config_.bno055.acc_offset[2]);
         RCLCPP_INFO(get_logger(), "BNO055 mag offset: [%d, %d, %d]", config_.bno055.mag_offset[0], config_.bno055.mag_offset[1], config_.bno055.mag_offset[2]);
         RCLCPP_INFO(get_logger(), "BNO055 gyro offset: [%d, %d, %d]", config_.bno055.gyro_offset[0], config_.bno055.gyro_offset[1], config_.bno055.gyro_offset[2]);
@@ -59,7 +60,7 @@ namespace rbf_bno055_driver
         timer_ = this->create_wall_timer(
             std::chrono::milliseconds(10),
             std::bind(&BNO055Driver::timerCallback, this));
-        if(config_.bno055.set_offset == false){
+        if(config_.bno055.make_calibration == true){
             timer_2_ = this->create_wall_timer(
             std::chrono::milliseconds(500),
             std::bind(&BNO055Driver::newTimerCallback, this));
@@ -77,6 +78,7 @@ namespace rbf_bno055_driver
         config_.bno055.gyro_factor = this->declare_parameter<float>("BNO055.gyro_factor", 900.0);
         config_.bno055.grav_factor = this->declare_parameter<float>("BNO055.grav_factor", 100.0);
         config_.bno055.set_offset = this->declare_parameter<bool>("BNO055.set_offset", "true");
+        config_.bno055.make_calibration = this->declare_parameter<bool>("BNO055.make_calibration", "true");
         
         auto acc_offset_param = this->declare_parameter<std::vector<int>>("BNO055.acc_offset", {0xFFEC, 0x00A5, 0xFFE8});
         auto mag_offset_param = this->declare_parameter<std::vector<int>>("BNO055.mag_offset", {0xFFB4, 0xFE9E, 0x027D});
@@ -131,24 +133,24 @@ namespace rbf_bno055_driver
             calb_gyro_ = bno_->read_calib_data_gyro();
 
             // Write new offsets to the device
-            std::vector<uint16_t> new_acc_offset = {calb_acc_.x_msb << 8 | calb_acc_.x_lsb, calb_acc_.y_msb << 8 | calb_acc_.y_lsb, calb_acc_.z_msb << 8 | calb_acc_.z_lsb};
-            std::vector<uint16_t> new_mag_offset = {calb_mag_.x_msb << 8 | calb_mag_.x_lsb, calb_mag_.y_msb << 8 | calb_mag_.y_lsb, calb_mag_.z_msb << 8 | calb_mag_.z_lsb};
-            std::vector<uint16_t> new_gyro_offset = {calb_gyro_.x_msb << 8 | calb_gyro_.x_lsb, calb_gyro_.y_msb << 8 | calb_gyro_.y_lsb};
+            std::vector<uint16_t> new_acc_offset = {static_cast<uint16_t>(calb_acc_.x_msb << 8 | calb_acc_.x_lsb), static_cast<uint16_t>(calb_acc_.y_msb << 8 | calb_acc_.y_lsb), static_cast<uint16_t>(calb_acc_.z_msb << 8 | calb_acc_.z_lsb)};
+            std::vector<uint16_t> new_mag_offset = {static_cast<uint16_t>(calb_mag_.x_msb << 8 | calb_mag_.x_lsb), static_cast<uint16_t>(calb_mag_.y_msb << 8 | calb_mag_.y_lsb), static_cast<uint16_t>(calb_mag_.z_msb << 8 | calb_mag_.z_lsb)};
+            std::vector<uint16_t> new_gyro_offset = {static_cast<uint16_t>(calb_gyro_.x_msb << 8 | calb_gyro_.x_lsb), static_cast<uint16_t>(calb_gyro_.y_msb << 8 | calb_gyro_.y_lsb), static_cast<uint16_t>(calb_gyro_.z_msb << 8 | calb_gyro_.z_lsb)};
             
             bno_->initialize_calib(new_acc_offset, new_mag_offset, new_gyro_offset, 0, 0);
 
             RCLCPP_INFO(get_logger(), "New offsets have been written to the device.");
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_accel_offset_x : %d", new_acc_offset[0]);
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_accel_offset_x : %d", new_acc_offset[1]);
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_accel_offset_x : %d", new_acc_offset[2]);
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_accel_offset_y : %d", new_acc_offset[1]);
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_accel_offset_z : %d", new_acc_offset[2]);
 
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_accel_offset_x : %d", new_mag_offset[0]);
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_accel_offset_x : %d", new_mag_offset[1]);
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_accel_offset_x : %d", new_mag_offset[2]);
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_mag_offset_x : %d", new_mag_offset[0]);
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_mag_offset_y : %d", new_mag_offset[1]);
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_mag_offset_z : %d", new_mag_offset[2]);
 
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_accel_offset_x : %d", new_gyro_offset[0]);
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_accel_offset_x : %d", new_gyro_offset[1]);
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_accel_offset_x : %d", new_gyro_offset[2]);
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_gyro_offset_x : %d", new_gyro_offset[0]);
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_gyro_offset_y : %d", new_gyro_offset[1]);
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_gyro_offset_z : %d", new_gyro_offset[2]);
         
         } catch (const BNO055::BNO055Exception& e) {
             RCLCPP_ERROR(get_logger(), "Error reading or writing new offsets: %s", e.what());

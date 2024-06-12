@@ -34,6 +34,7 @@ namespace rbf_bno055_driver
             float gyro_factor;
             float grav_factor;
             bool set_offset;
+            bool make_calibration;
             std::vector<uint16_t> mag_offset;
             std::vector<uint16_t> acc_offset;
             std::vector<uint16_t> gyro_offset;
