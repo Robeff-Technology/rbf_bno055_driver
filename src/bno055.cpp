@@ -10,12 +10,20 @@
 // Constructor
 namespace rbf_bno055_driver {
 
+    /**
+     * @brief Constructor for BNO055 class.
+     * @param port_name The name of the serial port to be used.
+     */
+
     BNO055::BNO055(const std::string& port_name) {
         serial_port_.set_port_name(port_name.c_str());
         serial_port_.open();
         serial_port_.configure(115200, 8, 'N', 1);
     }
 
+    /**
+     * @brief Initializes the BNO055 sensor.
+     */
 
     void BNO055::initialize() {
         size_t size = 0;
@@ -95,6 +103,15 @@ namespace rbf_bno055_driver {
 
     }
 
+    /**
+     * @brief Initializes the BNO055 sensor with calibration data.
+     * @param acc_offset Accelerometer offset values.
+     * @param mag_offset Magnetometer offset values.
+     * @param gyro_offset Gyroscope offset values.
+     * @param acc_radius Accelerometer radius.
+     * @param mag_radius Magnetometer radius.
+     */
+
     void BNO055::initialize_calib(std::vector<uint16_t>& acc_offset, std::vector<uint16_t>& mag_offset, std::vector<uint16_t>& gyro_offset, int16_t acc_radius, int16_t mag_radius) {
         size_t size = 0;
         
@@ -110,8 +127,6 @@ namespace rbf_bno055_driver {
             }
         }
 
-
-        // SET OPERATION MODE
         uint8_t operation_mode = BNO055OperationMode::CONFIG;
         size = create_write_command_buffer(BNO055Register::OPR_MODE, reinterpret_cast<const uint8_t*>(&operation_mode), 1, sending_buffer);
         serial_port_.write(reinterpret_cast<char*>(sending_buffer), size);
@@ -120,8 +135,6 @@ namespace rbf_bno055_driver {
             throw BNO055Exception("OPERATION MODE response error");
         }
 
-
-        // SET POWER MODE
         uint8_t power_mode = BNO055PowerMode::NORMAL;
         size = create_write_command_buffer(BNO055Register::PWR_MODE, reinterpret_cast<const uint8_t*>(&power_mode), 1, sending_buffer);
         serial_port_.write(reinterpret_cast<char*>(sending_buffer), size);
@@ -130,8 +143,6 @@ namespace rbf_bno055_driver {
             throw BNO055Exception("POWER MODE response error");
         }
 
-
-        // SET PAGE ID
         uint8_t page_id = 0;
         size = create_write_command_buffer(BNO055Register::PAGE_ID, reinterpret_cast<const uint8_t*>(&page_id), 1, sending_buffer);
         serial_port_.write(reinterpret_cast<char*>(sending_buffer), size);
@@ -140,8 +151,6 @@ namespace rbf_bno055_driver {
             throw BNO055Exception("PAGE ID response error");
         }
 
-
-        // SELECT OSCILLATOR
         uint8_t osc_sel = 0x00;
         size = create_write_command_buffer(BNO055Register::SYS_TRIGGER, reinterpret_cast<const uint8_t*>(&osc_sel), 1, sending_buffer);
         serial_port_.write(reinterpret_cast<char*>(sending_buffer), size);
@@ -150,8 +159,6 @@ namespace rbf_bno055_driver {
             throw BNO055Exception("OSC SEL response error");
         }
 
-
-        // SET UNITS 
         uint8_t units = 0x02;
         size = create_write_command_buffer(BNO055Register::UNIT_SEL, reinterpret_cast<const uint8_t*>(&units), 1, sending_buffer);
         serial_port_.write(reinterpret_cast<char*>(sending_buffer), size);
@@ -204,9 +211,7 @@ namespace rbf_bno055_driver {
         if(check_write_status(receiving_buffer) == false){
             throw BNO055Exception("MAG RADIUS response error");
         }
-
         
-        // SET NDOF MODE
         operation_mode = BNO055OperationMode::NDOF;
         size = create_write_command_buffer(BNO055Register::OPR_MODE, reinterpret_cast<const uint8_t*>(&operation_mode), 1, sending_buffer);
         serial_port_.write(reinterpret_cast<char*>(sending_buffer), size);
@@ -214,8 +219,6 @@ namespace rbf_bno055_driver {
         if(check_write_status(receiving_buffer) == false){
             throw BNO055Exception("OPERATION MODE response error");
         } 
-
-
     }
 
 
@@ -233,6 +236,15 @@ namespace rbf_bno055_driver {
         return index;
     }
 
+    /**
+     * @brief Creates a write command buffer for the BNO055 sensor.
+     * @param reg The register to write to.
+     * @param data The data to write.
+     * @param length The length of the data.
+     * @param buffer The buffer to store the command.
+     * @return The size of the command.
+     */
+
     size_t BNO055::create_write_command_buffer(BNO055ConfigRegister reg_adr, const uint8_t* data, size_t data_len, uint8_t* buffer) {
         size_t index = 0;
         buffer[index++] = BNO055MessageType::REGISTER_COMMAND;
@@ -247,6 +259,14 @@ namespace rbf_bno055_driver {
         return index;
     }
 
+    /**
+     * @brief Creates a read command buffer for the BNO055 sensor.
+     * @param reg The register to read from.
+     * @param length The length of data to read.
+     * @param buffer The buffer to store the command.
+     * @return The size of the command.
+     */
+
     size_t BNO055::create_read_command_buffer(BNO055Register reg_adr, size_t data_len, uint8_t* buffer) {
         size_t index = 0;
         buffer[index++] = BNO055MessageType::REGISTER_COMMAND;
@@ -255,6 +275,13 @@ namespace rbf_bno055_driver {
         buffer[index++] = data_len;
         return index;
     }
+
+    /**
+     * @brief Checks the status of a received read command.
+     * @param buffer The buffer containing the received data.
+     * @param length The expected length of the data.
+     * @return True if the status is successful, false otherwise.
+     */
 
     bool BNO055::check_receive_command(const uint8_t* buffer, size_t data_len){
         if(buffer[0] != BNO055MessageType::READ_RESPONSE){
@@ -266,6 +293,12 @@ namespace rbf_bno055_driver {
         return true;
     }
 
+    /**
+     * @brief Checks the status of a received write command.
+     * @param buffer The buffer containing the received data.
+     * @return True if the status is successful, false otherwise.
+     */
+
     bool BNO055::check_write_status(const uint8_t* buffer){
         if(buffer[0] != BNO055MessageType::RESPONSE_STATUS){
             return false;
@@ -276,6 +309,12 @@ namespace rbf_bno055_driver {
         return true;
     }
 
+    /**
+     * @brief Creates an offset array for the BNO055 sensor.
+     * @param offsets The offsets to set.
+     * @return A pointer to the array of offsets.
+     */
+
     uint8_t* BNO055::create_offset_array(std::vector<uint16_t>& offset){
         uint8_t *offset_array = new uint8_t[offset.size()*2];
         for(size_t i = 0; i < offset.size(); i++){
@@ -284,7 +323,13 @@ namespace rbf_bno055_driver {
         }
         return offset_array;
     }
-    
+
+    /**
+     * @brief Creates a radius array for the BNO055 sensor.
+     * @param radius The radius to set.
+     * @return A pointer to the array of radius values.
+     */
+
     uint8_t* BNO055::create_radius_array(int16_t radius){
         uint8_t *radius_array = new uint8_t[sizeof(int16_t)];
         radius_array[0] = radius & 0xFF;

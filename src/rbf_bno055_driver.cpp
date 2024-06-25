@@ -5,7 +5,13 @@
 
 namespace rbf_bno055_driver
 {
-    BNO055Driver::BNO055Driver(const rclcpp::NodeOptions& options) : Node("rbf_bno055_driver", options) {
+    /**
+     * @brief Constructor for BNO055Driver class.
+     * @param options Node options for the ROS 2 node.
+     */
+
+    BNO055Driver::BNO055Driver(const rclcpp::NodeOptions& options) : Node("rbf_bno055_driver", options){
+
         load_parameters();
 
         RCLCPP_INFO(get_logger(), "Serial port name: %s", config_.serial_port.port.c_str());
@@ -31,25 +37,25 @@ namespace rbf_bno055_driver
 
         // Initialize the sensor with configured offsets
         if(config_.bno055.set_offset == true){
-        try{
-            bno_->initialize_calib(config_.bno055.acc_offset, config_.bno055.mag_offset, config_.bno055.gyro_offset, config_.bno055.acc_radius, config_.bno055.mag_radius);
+            try{
+                bno_->initialize_calib(config_.bno055.acc_offset, config_.bno055.mag_offset, config_.bno055.gyro_offset, config_.bno055.acc_radius, config_.bno055.mag_radius);
+            }
+            catch (const BNO055::BNO055Exception& e){
+                RCLCPP_ERROR(get_logger(), "BNO055 initialization error = %s", e.what());
+                rclcpp::shutdown();
+            }            
         }
-        catch (const BNO055::BNO055Exception& e){
-            RCLCPP_ERROR(get_logger(), "BNO055 initialization error = %s", e.what());
-            rclcpp::shutdown();
-        }
-               
-        }
+
         // Initialize the sensor
         else{        
-        try{
-            bno_->initialize();
-        }
-        catch (const BNO055::BNO055Exception& e){
-            RCLCPP_ERROR(get_logger(), "BNO055 initialization error = %s", e.what());
-            rclcpp::shutdown();
-        }} 
-
+            try{
+                bno_->initialize();
+            }
+            catch (const BNO055::BNO055Exception& e){
+                RCLCPP_ERROR(get_logger(), "BNO055 initialization error = %s", e.what());
+                rclcpp::shutdown();
+            }
+        } 
 
        // Initialize the sensor
         pub_imu_raw_ = this->create_publisher<sensor_msgs::msg::Imu>("imu_raw", 10);
@@ -59,16 +65,23 @@ namespace rbf_bno055_driver
 
         // Create a timer
         freq = (1 / config_.bno055.data_frequency) * 1000;
+
         timer_ = this->create_wall_timer(
             std::chrono::milliseconds(freq),
             std::bind(&BNO055Driver::timerCallback, this));
+        
         if(config_.bno055.make_calibration == true){
             timer_2_ = this->create_wall_timer(
             std::chrono::milliseconds(500),
             std::bind(&BNO055Driver::newTimerCallback, this));
         }
 
-        }
+    }
+
+    /**
+     * @brief Load parameters from the parameter server.
+     */
+
     void BNO055Driver::load_parameters() {
         // Load serial port parameters
         config_.serial_port.port = this->declare_parameter<std::string>("serial_port.name", "/dev/ttyUSB0");
@@ -93,9 +106,10 @@ namespace rbf_bno055_driver
         config_.bno055.gyro_offset.assign(gyro_offset_param.begin(), gyro_offset_param.end());
     }
 
-
     void BNO055Driver::timerCallback(){
+
         RawBNO055Data raw_;
+
         try{
             raw_ = bno_->read_raw_data();
         }
@@ -106,11 +120,16 @@ namespace rbf_bno055_driver
         pub_imu_->publish(create_imu_message(raw_));
         pub_mag_->publish(create_mag_message(raw_));
         pub_grav_->publish(create_grav_message(raw_));
-
     }
 
+    /**
+     * @brief Callback function for the timer to read and publish sensor data.
+     */
+
     void BNO055Driver::newTimerCallback() {
+
         CalibrationBNO055Status calib_status_;
+
         try {
             calib_status_ = bno_->read_calib_status();
 
@@ -123,13 +142,18 @@ namespace rbf_bno055_driver
         catch (const BNO055::BNO055Exception& e) {
             RCLCPP_ERROR(get_logger(), "Error reading calibration status: %s", e.what());
         }
-
     }
-    
+
+    /**
+     * @brief Read new calibration offsets and write them to the sensor.
+     */
+
     void BNO055Driver::readAndWriteNewOffsets() {
+
         CalibrationBNO055DataAcc calb_acc_;
         CalibrationBNO055DataMag calb_mag_;
         CalibrationBNO055DataGyro calb_gyro_;
+
         try {
             calb_acc_ = bno_->read_calib_data_acc();
             calb_mag_ = bno_->read_calib_data_mag();
@@ -155,28 +179,36 @@ namespace rbf_bno055_driver
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_gyro_offset_y : %d", new_gyro_offset[1]);
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "new_gyro_offset_z : %d", new_gyro_offset[2]);
         
-        } catch (const BNO055::BNO055Exception& e) {
+        } 
+        catch (const BNO055::BNO055Exception& e) {
             RCLCPP_ERROR(get_logger(), "Error reading or writing new offsets: %s", e.what());
         }
     }
 
+    /**
+     * @brief Create a raw IMU message from the raw sensor data.
+     * @param raw_data Raw sensor data from the BNO055.
+     * @return IMU message populated with raw sensor data.
+     */
+
     sensor_msgs::msg::Imu BNO055Driver::create_raw_imu_message(const RawBNO055Data& raw_data){
+
         sensor_msgs::msg::Imu imu_raw_msg;
         imu_raw_msg.header.stamp = now();
         imu_raw_msg.header.frame_id = "imu_link"; // Adjust frame_id as needed
 
-    // Fill in IMU data
+        // Fill in IMU data
         imu_raw_msg.orientation.x = 0.0; // Adjust if orientation data is available
         imu_raw_msg.orientation.y = 0.0;
         imu_raw_msg.orientation.z = 0.0;
         imu_raw_msg.orientation.w = 1.0; // No orientation data available, setting quaternion to identity
         
-    // Acceleration data
+        // Acceleration data
         imu_raw_msg.linear_acceleration.x = raw_data.acc_x;
         imu_raw_msg.linear_acceleration.y = raw_data.acc_y;
         imu_raw_msg.linear_acceleration.z = raw_data.acc_z;
 
-    // Gyroscope data
+        // Gyroscope data
         imu_raw_msg.angular_velocity.x = raw_data.gyro_x;
         imu_raw_msg.angular_velocity.y = raw_data.gyro_y;
         imu_raw_msg.angular_velocity.z = raw_data.gyro_z;
@@ -184,7 +216,15 @@ namespace rbf_bno055_driver
 
         return imu_raw_msg;
     }
+
+    /**
+     * @brief Create an IMU message from the raw sensor data.
+     * @param raw_data Raw sensor data from the BNO055.
+     * @return IMU message populated with processed sensor data.
+     */
+
     sensor_msgs::msg::Imu BNO055Driver::create_imu_message(const RawBNO055Data& imu_data){
+
         sensor_msgs::msg::Imu imu_msg;
         imu_msg.header.stamp = now();
         imu_msg.header.frame_id = "imu_link"; // Adjust frame_id as needed
@@ -234,6 +274,12 @@ namespace rbf_bno055_driver
         return imu_msg;
     }
 
+    /**
+     * @brief Create a MagneticField message from the raw sensor data.
+     * @param raw_data Raw sensor data from the BNO055.
+     * @return MagneticField message populated with processed sensor data.
+     */
+
     sensor_msgs::msg::MagneticField BNO055Driver::create_mag_message(const RawBNO055Data& mag_data){
 
         sensor_msgs::msg::MagneticField mag_msg;
@@ -248,8 +294,15 @@ namespace rbf_bno055_driver
 
         return mag_msg;
     }
+    
+    /**
+     * @brief Create a Vector3 message for gravity from the raw sensor data.
+     * @param raw_data Raw sensor data from the BNO055.
+     * @return Vector3 message populated with gravity data.
+     */
 
     geometry_msgs::msg::Vector3 BNO055Driver::create_grav_message(const RawBNO055Data& grav_data){
+
         geometry_msgs::msg::Vector3 grav_msg;
         float grav_factor = config_.bno055.grav_factor;
         
