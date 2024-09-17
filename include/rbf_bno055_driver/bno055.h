@@ -33,6 +33,7 @@ public:
 
     void initialize();
     void initialize_calib(std::vector<uint16_t>& acc_offset, std::vector<uint16_t>& mag_offset, std::vector<uint16_t>& gyro_offset, int16_t acc_radius, int16_t mag_radius);
+    void retry_until_success(std::function<bool()> action, const int timeout_seconds, const int retry_interval_ms);
 
     RawBNO055Data read_raw_data();
     CalibrationBNO055DataAcc read_calib_data_acc();

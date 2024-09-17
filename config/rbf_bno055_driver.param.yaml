@@ -2,16 +2,15 @@
   ros__parameters:
     serial_port:
       name: "/dev/ttyUSB0"
-      baud_rate: 115200
 
     BNO055:
       acc_factor: 100.0
       mag_factor: 16000000.0
       gyro_factor: 900.0
       grav_factor: 100.0
-      data_frequency: 100.0
-      make_calibration: true
-      set_offset: false
-      acc_offset: [0xFFEC, 0x00A5, 0xFFE8]
-      mag_offset: [0xFFB4, 0xFE9E, 0x027D]
-      gyro_offset: [0x0002, 0xFFFF, 0xFFFF]
+      data_frequency: 100.0 # max 62.5 hz
+      make_calibration: false
+      set_offset: true
+      acc_offset: [0xFFEF, 0xA6, 0xFFD0]
+      mag_offset: [0x0, 0xFFFF, 0xFED3]
+      gyro_offset: [0xFFFE, 0x0, 0x1]
