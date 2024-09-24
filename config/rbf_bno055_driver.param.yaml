@@ -11,6 +11,6 @@
       data_frequency: 100.0 # max 62.5 hz
       make_calibration: false
       set_offset: true
-      acc_offset: [0xFFEF, 0xA6, 0xFFD0]
-      mag_offset: [0x0, 0xFFFF, 0xFED3]
-      gyro_offset: [0xFFFE, 0x0, 0x1]
+      acc_offset: [65463, 50, 65406]
+      mag_offset: [65493, 84, 65460]
+      gyro_offset: [65534, 2, 0]
