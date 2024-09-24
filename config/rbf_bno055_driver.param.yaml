@@ -1,7 +1,7 @@
 /**:
   ros__parameters:
     serial_port:
-      name: "/dev/ttyUSB0"
+      name: "/dev/BNO"
 
     BNO055:
       acc_factor: 100.0

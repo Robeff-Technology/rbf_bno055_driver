@@ -288,6 +288,29 @@ namespace rbf_bno055_driver
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Calibration initialize fully done.");
     }
 
+    void BNO055::setAxisRemap(BNO055_AXIS_REMAP_CONFIG remapcode) 
+    {
+    BNO055_OPMODE_t modeback = getMode();
+
+    setMode(OPERATION_MODE_CONFIG);
+    std::this_thread::sleep_for(std::chrono::milliseconds(25));
+    write8(BNO055_AXIS_MAP_CONFIG_ADDR, remapcode);
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    setMode(modeback);
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    }
+
+    void BNO055::setAxisSign(BNO055_AXIS_REMAP_SIGN remapsign) {
+        BNO055_OPMODE_t modeback = getMode();
+
+        setMode(OPERATION_MODE_CONFIG);
+        std::this_thread::sleep_for(std::chrono::milliseconds(25));
+        write8(BNO055_AXIS_MAP_SIGN_ADDR, remapsign);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        setMode(modeback);
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    }
+
     size_t BNO055::create_write_command_buffer(BNO055Register reg_adr, const uint8_t *data, size_t data_len, uint8_t *buffer)
     {
         size_t index = 0;

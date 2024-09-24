@@ -118,7 +118,38 @@ enum BNO055Register : uint8_t
   ACCEL_RADIUS_LSB_ADDR = 0X67,
   ACCEL_RADIUS_MSB_ADDR = 0X68,
   MAG_RADIUS_LSB_ADDR = 0X69,
-  MAG_RADIUS_MSB_ADDR = 0X6A
+  MAG_RADIUS_MSB_ADDR = 0X6A,
+
+  AXIS_MAP_CONFIG_ADDR = 0X41,
+  AXIS_MAP_SIGN_ADDR = 0X42,
+
+};
+
+
+/** Remap settings **/
+enum BNO055RemapSettings : uint8_t
+{
+  REMAP_CONFIG_P0 = 0x21,
+  REMAP_CONFIG_P1 = 0x24, // default
+  REMAP_CONFIG_P2 = 0x24,
+  REMAP_CONFIG_P3 = 0x21,
+  REMAP_CONFIG_P4 = 0x24,
+  REMAP_CONFIG_P5 = 0x21,
+  REMAP_CONFIG_P6 = 0x21,
+  REMAP_CONFIG_P7 = 0x24
+};
+
+/** Remap Signs **/
+enum BNO055RemapSigns : uint8_t
+{
+  REMAP_SIGN_P0 = 0x04,
+  REMAP_SIGN_P1 = 0x00, // default
+  REMAP_SIGN_P2 = 0x06,
+  REMAP_SIGN_P3 = 0x02,
+  REMAP_SIGN_P4 = 0x03,
+  REMAP_SIGN_P5 = 0x01,
+  REMAP_SIGN_P6 = 0x07,
+  REMAP_SIGN_P7 = 0x05
 };
 
 enum BNO055ResponseStatus : uint8_t
