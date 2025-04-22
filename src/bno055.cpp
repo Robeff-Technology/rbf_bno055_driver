@@ -47,7 +47,7 @@ namespace rbf_bno055_driver {
         serial_port_.write(reinterpret_cast<char*>(sending_buffer), size);
         serial_port_.read(reinterpret_cast<char*>(receiving_buffer), 2);
         if(check_write_status(receiving_buffer) == false){
-            throw BNO055Exception("OPERATION MODE response error");
+            throw BNO055Exception("SET OPERATION MODE response error");
         }
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "OPERATION MODE response success");
 
@@ -97,7 +97,7 @@ namespace rbf_bno055_driver {
         serial_port_.write(reinterpret_cast<char*>(sending_buffer), size);
         serial_port_.read(reinterpret_cast<char*>(receiving_buffer), 2);
         if(check_write_status(receiving_buffer) == false){
-            throw BNO055Exception("OPERATION MODE response error");
+            throw BNO055Exception("SET NDOF OPERATION MODE response error");
         } 
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "NDOF MODE response success");
 
@@ -126,13 +126,13 @@ namespace rbf_bno055_driver {
                 throw BNO055Exception("Error reading chip id");
             }
         }
-
+        // SET OPERATION MODE
         uint8_t operation_mode = BNO055OperationMode::CONFIG;
         size = create_write_command_buffer(BNO055Register::OPR_MODE, reinterpret_cast<const uint8_t*>(&operation_mode), 1, sending_buffer);
         serial_port_.write(reinterpret_cast<char*>(sending_buffer), size);
         serial_port_.read(reinterpret_cast<char*>(receiving_buffer), 2);
         if(check_write_status(receiving_buffer) == false){
-            throw BNO055Exception("OPERATION MODE response error");
+            throw BNO055Exception("SET OPERATION MODE response error");
         }
 
         uint8_t power_mode = BNO055PowerMode::NORMAL;
@@ -211,13 +211,13 @@ namespace rbf_bno055_driver {
         if(check_write_status(receiving_buffer) == false){
             throw BNO055Exception("MAG RADIUS response error");
         }
-        
+        // SET NDOF MODE
         operation_mode = BNO055OperationMode::NDOF;
         size = create_write_command_buffer(BNO055Register::OPR_MODE, reinterpret_cast<const uint8_t*>(&operation_mode), 1, sending_buffer);
         serial_port_.write(reinterpret_cast<char*>(sending_buffer), size);
         serial_port_.read(reinterpret_cast<char*>(receiving_buffer), 2);
         if(check_write_status(receiving_buffer) == false){
-            throw BNO055Exception("OPERATION MODE response error");
+            throw BNO055Exception("SET NDOF OPERATION MODE response error");
         } 
     }
 
@@ -379,7 +379,7 @@ namespace rbf_bno055_driver {
         serial_port_.read(reinterpret_cast<char*>(receiving_buffer), sizeof(CalibrationBNO055DataAcc) + 2);
         if (check_receive_command(receiving_buffer, sizeof(CalibrationBNO055DataAcc)) == false) {
             memset(receiving_buffer, 0, sizeof(CalibrationBNO055DataAcc) + 2);
-            throw BNO055Exception("CALIB DATA response error");
+            throw BNO055Exception("CALIB DATA response error in read_calib_data_acc");
         }
         CalibrationBNO055DataAcc acc_offset;
         std::memcpy(&acc_offset, &receiving_buffer[2], sizeof(CalibrationBNO055DataAcc));
@@ -389,12 +389,13 @@ namespace rbf_bno055_driver {
 
     CalibrationBNO055DataMag BNO055::read_calib_data_mag() {
         size_t size = 0;
+        rclcpp::sleep_for(std::chrono::milliseconds(25));
         size = create_read_command_buffer(BNO055Register::MAG_OFFSET_X_LSB_ADDR, sizeof(CalibrationBNO055DataMag), sending_buffer);
         serial_port_.write(reinterpret_cast<char*>(sending_buffer), size);
         serial_port_.read(reinterpret_cast<char*>(receiving_buffer), sizeof(CalibrationBNO055DataMag) + 2);
         if (check_receive_command(receiving_buffer, sizeof(CalibrationBNO055DataMag)) == false) {
             memset(receiving_buffer, 0, sizeof(CalibrationBNO055DataMag) + 2);
-            throw BNO055Exception("CALIB DATA response error");
+            throw BNO055Exception("CALIB DATA response error in read_calib_data_mag");
         }
         CalibrationBNO055DataMag mag_offset;
         std::memcpy(&mag_offset, &receiving_buffer[2], sizeof(CalibrationBNO055DataMag));
@@ -404,12 +405,13 @@ namespace rbf_bno055_driver {
 
     CalibrationBNO055DataGyro BNO055::read_calib_data_gyro() {
         size_t size = 0;
+        rclcpp::sleep_for(std::chrono::milliseconds(25)); 
         size = create_read_command_buffer(BNO055Register::GYRO_OFFSET_X_LSB_ADDR, sizeof(CalibrationBNO055DataGyro), sending_buffer);
         serial_port_.write(reinterpret_cast<char*>(sending_buffer), size);
         serial_port_.read(reinterpret_cast<char*>(receiving_buffer), sizeof(CalibrationBNO055DataGyro) + 2);
         if (check_receive_command(receiving_buffer, sizeof(CalibrationBNO055DataGyro)) == false) {
             memset(receiving_buffer, 0, sizeof(CalibrationBNO055DataGyro) + 2);
-            throw BNO055Exception("CALIB DATA response error");
+            throw BNO055Exception("CALIB DATA response error in read_calib_data_gyro");
         }
         CalibrationBNO055DataGyro gyro_offset;
         std::memcpy(&gyro_offset, &receiving_buffer[2], sizeof(CalibrationBNO055DataGyro));

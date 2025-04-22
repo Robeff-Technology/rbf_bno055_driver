@@ -10,8 +10,8 @@
       gyro_factor: 900.0
       grav_factor: 100.0
       data_frequency: 100.0
-      make_calibration: true
-      set_offset: false
-      acc_offset: [0xFFEC, 0x00A5, 0xFFE8]
-      mag_offset: [0xFFB4, 0xFE9E, 0x027D]
-      gyro_offset: [0x0002, 0xFFFF, 0xFFFF]
+      make_calibration: false
+      set_offset: true
+      acc_offset: [65445, 65463, 65447]
+      mag_offset: [65233, 65465, 65268]
+      gyro_offset: [65535, 65534, 65535]

@@ -3,6 +3,7 @@
 #include "rbf_bno055_driver/bno055_reg.h"
 #include <rclcpp/clock.hpp>
 
+
 namespace rbf_bno055_driver
 {
     /**
@@ -28,7 +29,7 @@ namespace rbf_bno055_driver
         RCLCPP_INFO(get_logger(), "BNO055 gyro offset: [%d, %d, %d]", config_.bno055.gyro_offset[0], config_.bno055.gyro_offset[1], config_.bno055.gyro_offset[2]);
 
         try{
-            bno_ = std::make_shared<BNO055>("/dev/ttyUSB0");
+            bno_ = std::make_shared<BNO055>(config_.serial_port.port.c_str());
         }
         catch (const SerialPortException& e){
             RCLCPP_ERROR(get_logger(), "Serial port error = %s", e.what());
@@ -41,7 +42,7 @@ namespace rbf_bno055_driver
                 bno_->initialize_calib(config_.bno055.acc_offset, config_.bno055.mag_offset, config_.bno055.gyro_offset, config_.bno055.acc_radius, config_.bno055.mag_radius);
             }
             catch (const BNO055::BNO055Exception& e){
-                RCLCPP_ERROR(get_logger(), "BNO055 initialization error = %s", e.what());
+                RCLCPP_ERROR(get_logger(), "BNO055 initialization of calibration error = %s", e.what());
                 rclcpp::shutdown();
             }            
         }
@@ -66,15 +67,15 @@ namespace rbf_bno055_driver
         // Create a timer
         freq = (1 / config_.bno055.data_frequency) * 1000;
 
-        timer_ = this->create_wall_timer(
-            std::chrono::milliseconds(freq),
-            std::bind(&BNO055Driver::timerCallback, this));
-        
-        if(config_.bno055.make_calibration == true){
+        if(config_.bno055.make_calibration == true){ 
             timer_2_ = this->create_wall_timer(
             std::chrono::milliseconds(500),
             std::bind(&BNO055Driver::newTimerCallback, this));
-        }
+        }else {
+        timer_ = this->create_wall_timer(
+            std::chrono::milliseconds(freq),
+            std::bind(&BNO055Driver::timerCallback, this));
+        }   
 
     }
 
