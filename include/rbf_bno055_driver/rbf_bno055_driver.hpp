@@ -14,6 +14,7 @@
 #include <geometry_msgs/msg/quaternion.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
 #include <cmath>
+#include <csignal> 
 
 
 namespace rbf_bno055_driver
@@ -55,6 +56,7 @@ namespace rbf_bno055_driver
         void newTimerCallback();
         void readAndWriteNewOffsets();
         void load_parameters();
+        static void signal_handler(int signum);
 
         std::shared_ptr<BNO055> bno_;
         rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr pub_imu_raw_;

@@ -29,6 +29,9 @@ namespace rbf_bno055_driver
         RCLCPP_INFO(get_logger(), "BNO055 gyro offset: [%d, %d, %d]", config_.bno055.gyro_offset[0], config_.bno055.gyro_offset[1], config_.bno055.gyro_offset[2]);
 
         try{
+            std::signal(SIGINT, signal_handler);
+            std::signal(SIGTERM, signal_handler);
+
             bno_ = std::make_shared<BNO055>(config_.serial_port.port.c_str());
         }
         catch (const SerialPortException& e){
@@ -115,6 +118,7 @@ namespace rbf_bno055_driver
             raw_ = bno_->read_raw_data();
         }
         catch (const BNO055::BNO055Exception& e){
+            // RCLCPP_ERROR(get_logger(), "Error read raw data: %s", e.what());
         }
         // Publish IMU data
         pub_imu_raw_->publish(create_raw_imu_message(raw_));
@@ -141,7 +145,7 @@ namespace rbf_bno055_driver
             }
         } 
         catch (const BNO055::BNO055Exception& e) {
-            RCLCPP_ERROR(get_logger(), "Error reading calibration status: %s", e.what());
+            // RCLCPP_ERROR(get_logger(), "Error reading calibration status: %s", e.what());
         }
     }
 
@@ -311,6 +315,10 @@ namespace rbf_bno055_driver
         grav_msg.y = grav_data.gravity_y / grav_factor;
         grav_msg.z = grav_data.gravity_z / grav_factor;
         return grav_msg;
+    }
+    
+    void BNO055Driver::signal_handler(int signum) {
+        rclcpp::shutdown();
     }
 }
 
