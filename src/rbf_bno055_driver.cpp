@@ -16,7 +16,6 @@ namespace rbf_bno055_driver
         load_parameters();
 
         RCLCPP_INFO(get_logger(), "Serial port name: %s", config_.serial_port.port.c_str());
-        RCLCPP_INFO(get_logger(), "Serial port baud rate: %d", config_.serial_port.baudrate);
         RCLCPP_INFO(get_logger(), "BNO055 acc factor: %f", config_.bno055.acc_factor);
         RCLCPP_INFO(get_logger(), "BNO055 mag factor: %f", config_.bno055.mag_factor);
         RCLCPP_INFO(get_logger(), "BNO055 gyro factor: %f", config_.bno055.gyro_factor);
@@ -89,7 +88,6 @@ namespace rbf_bno055_driver
     void BNO055Driver::load_parameters() {
         // Load serial port parameters
         config_.serial_port.port = this->declare_parameter<std::string>("serial_port.name", "/dev/ttyUSB0");
-        config_.serial_port.baudrate = this->declare_parameter<int>("serial_port.baud_rate", 115200);
 
         // Load BNO055 parameters
         config_.bno055.acc_factor = this->declare_parameter<float>("BNO055.acc_factor", 100.0);
@@ -159,10 +157,14 @@ namespace rbf_bno055_driver
         CalibrationBNO055DataMag calb_mag_;
         CalibrationBNO055DataGyro calb_gyro_;
 
-        try {
+        try{
+            RCLCPP_INFO(get_logger(), "Reading new offsets from the device...");
             calb_acc_ = bno_->read_calib_data_acc();
+            RCLCPP_INFO(get_logger(), "Readed acc offsets");
             calb_mag_ = bno_->read_calib_data_mag();
+            RCLCPP_INFO(get_logger(), "Readed mag offsets");
             calb_gyro_ = bno_->read_calib_data_gyro();
+            RCLCPP_INFO(get_logger(), "Readed gyro offsets");   
 
             // Write new offsets to the device
             std::vector<uint16_t> new_acc_offset = {static_cast<uint16_t>(calb_acc_.x_msb << 8 | calb_acc_.x_lsb), static_cast<uint16_t>(calb_acc_.y_msb << 8 | calb_acc_.y_lsb), static_cast<uint16_t>(calb_acc_.z_msb << 8 | calb_acc_.z_lsb)};

@@ -27,7 +27,6 @@ namespace rbf_bno055_driver
     struct Config{
         struct SerialPort{
             std::string port;
-            int baudrate;
         }; 
         struct BNO055{    
             float acc_factor;
