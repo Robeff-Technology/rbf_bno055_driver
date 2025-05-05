@@ -18,7 +18,7 @@ public:
     void open();
     void configure(unsigned int baud_rate, int data_bits = 8, char parity = 'N', int stop_bits = 1);
     void write(const char* data, int length);
-    void read(char* buffer, int buffer_size);
+    int read(char* buffer, int buffer_size);
     void close();
     void set_port_name(const char* port_name);
 
